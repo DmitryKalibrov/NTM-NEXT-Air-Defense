@@ -1,0 +1,14 @@
+{
+  "type": "hbm:assembly_machine",
+  "duration": 120,
+  "input_items": [
+    { "count": 8, "ingredient": "#c:plates/steel" },
+    { "count": 4, "ingredient": "#hbm:ingots/any_plastic" },
+    { "count": 16, "ingredient": "hbm:rocket_fuel" },
+    { "count": 8, "ingredient": "#hbm:ingots/any_highexplosive" },
+    { "count": 2, "ingredient": "hbm:circuit_advanced" }
+  ],
+  "order": 85762,
+  "output_items": [ "ntm_air_defense:sam_tor" ],
+  "power": 100
+}

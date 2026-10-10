@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=east": { "model": "ntm_air_defense:block/turret_tor_east" },
+    "facing=north": { "model": "ntm_air_defense:block/turret_tor_north" },
+    "facing=south": { "model": "ntm_air_defense:block/turret_tor_south" },
+    "facing=west": { "model": "ntm_air_defense:block/turret_tor_west" }
+  }
+}

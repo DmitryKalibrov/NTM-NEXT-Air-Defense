@@ -1,0 +1,21 @@
+{
+  "fabric:type": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "model": "ntm_air_defense:models/obj/tor.obj",
+  "hidden": ["TorMissile"],
+  "groups": [
+    { "parts": ["TBase", "Turret", "SearchRadar", "TrackRadar", "Hatch1", "Hatch2", "Hatch3", "Hatch4", "Hatch5", "Hatch6", "Hatch7", "Hatch8"], "texture": "tor" }
+  ],
+  "offset_y": -1.4,
+  "textures": { "tor": "ntm_air_defense:block/tor", "particle": "ntm_air_defense:block/tor" },
+  "display": {
+    "gui": { "rotation": [30, 225, 0], "scale": [0.3, 0.3, 0.3], "translation": [0, 0, 0] },
+    "ground": { "rotation": [0, 0, 0], "scale": [0.18, 0.18, 0.18], "translation": [0, 2, 0] },
+    "fixed": { "rotation": [0, 180, 0], "scale": [0.35, 0.35, 0.35], "translation": [0, 0, 0] },
+    "thirdperson_righthand": { "rotation": [75, 45, 0], "scale": [0.14, 0.14, 0.14], "translation": [0, 2.5, 0] },
+    "thirdperson_lefthand": { "rotation": [75, 45, 0], "scale": [0.14, 0.14, 0.14], "translation": [0, 2.5, 0] },
+    "firstperson_righthand": { "rotation": [0, 45, 0], "scale": [0.15, 0.15, 0.15], "translation": [0, 3, 0] },
+    "firstperson_lefthand": { "rotation": [0, 225, 0], "scale": [0.15, 0.15, 0.15], "translation": [0, 3, 0] }
+  }
+}

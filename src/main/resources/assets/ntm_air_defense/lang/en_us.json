@@ -1,0 +1,10 @@
+{
+  "block.ntm_air_defense.turret_buk": "Buk SAM Launcher",
+  "block.ntm_air_defense.turret_tor": "Tor SAM Module",
+  "item.ntm_air_defense.sam_buk": "9M38 Surface-to-Air Missile",
+  "item.ntm_air_defense.sam_tor": "9M331 Surface-to-Air Missile",
+  "entity.ntm_air_defense.sam": "Surface-to-Air Missile",
+  "ntm_air_defense.linker.radar": "Radar at %s stored. Shift-click a SAM launcher to link it.",
+  "ntm_air_defense.linker.linked": "Launcher linked to radar at %s",
+  "ntm_air_defense.linker.no_radar": "Click a radar with the linker first"
+}

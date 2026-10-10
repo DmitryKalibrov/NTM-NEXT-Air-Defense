@@ -1,0 +1,14 @@
+{
+  "type": "hbm:assembly_machine",
+  "duration": 200,
+  "input_items": [
+    { "count": 16, "ingredient": "#c:plates/steel" },
+    { "count": 8, "ingredient": "#hbm:ingots/any_plastic" },
+    { "count": 32, "ingredient": "hbm:rocket_fuel" },
+    { "count": 16, "ingredient": "#hbm:ingots/any_highexplosive" },
+    { "count": 4, "ingredient": "hbm:circuit_advanced" }
+  ],
+  "order": 85761,
+  "output_items": [ "ntm_air_defense:sam_buk" ],
+  "power": 100
+}

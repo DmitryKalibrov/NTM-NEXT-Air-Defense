@@ -1,0 +1,10 @@
+{
+  "block.ntm_air_defense.turret_buk": "Пусковая установка ЗРК «Бук»",
+  "block.ntm_air_defense.turret_tor": "Боевой модуль ЗРК «Тор»",
+  "item.ntm_air_defense.sam_buk": "Зенитная управляемая ракета 9М38",
+  "item.ntm_air_defense.sam_tor": "Зенитная управляемая ракета 9М331",
+  "entity.ntm_air_defense.sam": "Зенитная ракета",
+  "ntm_air_defense.linker.radar": "Радар %s запомнен. Shift+ПКМ по пусковой, чтобы привязать её.",
+  "ntm_air_defense.linker.linked": "Пусковая привязана к радару %s",
+  "ntm_air_defense.linker.no_radar": "Сначала кликните линкером по радару"
+}
