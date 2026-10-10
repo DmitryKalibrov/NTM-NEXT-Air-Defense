@@ -1,6 +1,6 @@
 # Перенос в Minecraft: что выяснено (NTM 1.0.2, Fabric 26.2)
 
-Компилируемся против `libs/hbm-fabric-1.0.2.jar` (копия из mods). Исходники `ntm-next-master` СТАРЕЕ jar:
+Компилируемся против `com.hbm:ntm-next-fabric:1.0.2+mc26.2` и `dev.engine_room:crankshaft-fabric` из https://repo.warfactory.co/releases. Исходники `ntm-next-master` СТАРЕЕ jar:
 в 1.0.2 пакет `com.hbm.blockentity.*` вместо `tileentity`. Справочник — декомпиляция CFR
 (`java -jar cfr.jar hbm.jar --outputdir src`, CFR 0.152 качается с Google-зеркала Maven).
 

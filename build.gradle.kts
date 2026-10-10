@@ -9,12 +9,19 @@ base.archivesName = "ntm-air-defense"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
+repositories {
+    maven("https://repo.warfactory.co/releases") {
+        content { includeGroup("com.hbm"); includeGroup("dev.engine_room") }
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${property("minecraft_version")}")
     implementation("net.fabricmc:fabric-loader:${property("fabric_loader_version")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
-    // NTM-NEXT is not published to a maven; drop its jar (from your mods folder) into libs/.
-    compileOnly(fileTree("libs") { include("*.jar") })
+    compileOnly("com.hbm:ntm-next-fabric:1.0.2+mc26.2")
+    // NTM's turret renderer implements a Flywheel (Crankshaft) interface.
+    compileOnly("dev.engine_room:crankshaft-fabric:1.5.9+mc26.2")
 }
 
 tasks.processResources {

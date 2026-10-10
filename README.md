@@ -39,8 +39,8 @@
 
 ## Сборка
 
-`build.ps1` копирует jar NTM и Crankshaft из папки `mods` в `libs/` (они нужны только для
-компиляции), собирает мод и ставит его в тестовый инстанс. Нужен JDK 25.
+`gradlew build` (JDK 25). NTM и Crankshaft подтягиваются из [Warfactory Maven](https://repo.warfactory.co/)
+только для компиляции. `build.ps1` собирает и сразу ставит мод в тестовый инстанс.
 
 Модели, текстуры и анимации — в `blender/air_defense.blend`; `tools/obj2mesh.py` компилирует OBJ
 в формат `.hbm_mesh`, который читает NTM.
