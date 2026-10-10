@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -51,6 +52,8 @@ public class EntitySAM extends Entity {
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BYTE);
 
+    /** Client: glide between server positions like NTM missiles do, instead of snapping each packet. */
+    private final InterpolationHandler interpolation = new InterpolationHandler(this);
     private @Nullable Entity target;
     private @Nullable Vec3 lastTargetPos;
     private double speed;
@@ -88,10 +91,17 @@ public class EntitySAM extends Entity {
     }
 
     @Override
+    public InterpolationHandler getInterpolation() {
+        return interpolation;
+    }
+
+    @Override
     public void tick() {
+        Vec3 prePos = position();
+        interpolation.interpolate();
         super.tick();
         if (level().isClientSide()) {
-            SamTrail.tick(this);
+            SamTrail.tick(this, position().subtract(prePos));
             return;
         }
         Kind k = kind();
