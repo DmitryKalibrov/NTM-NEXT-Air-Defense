@@ -1,0 +1,37 @@
+{
+  "type": "hbm:assembly_machine",
+  "duration": 2400,
+  "input_items": [
+    {
+      "ingredient": "hbm:machine_assembly_machine"
+    },
+    {
+      "count": 64,
+      "ingredient": "#hbm:plates_welded/steel"
+    },
+    {
+      "count": 64,
+      "ingredient": "hbm:concrete_smooth"
+    },
+    {
+      "count": 32,
+      "ingredient": "#c:ingots/steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "hbm:motor_desh"
+    },
+    {
+      "count": 8,
+      "ingredient": "hbm:circuit_advanced"
+    },
+    {
+      "ingredient": "hbm:crt_display"
+    }
+  ],
+  "order": 85900,
+  "output_items": [
+    "ntm_air_defense:defense_assembler"
+  ],
+  "power": 100
+}

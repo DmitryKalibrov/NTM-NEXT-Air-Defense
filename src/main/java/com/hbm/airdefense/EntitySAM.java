@@ -3,6 +3,9 @@ package com.hbm.airdefense;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ChunkUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,17 +32,23 @@ import org.jspecify.annotations.Nullable;
 public class EntitySAM extends Entity {
 
     public enum Kind {
-        //    max speed, accel, turn deg/tick, life, fuse, damage, cold-launch ticks
+        //    max speed, accel, turn deg/tick, life, fuse, damage, cold-launch ticks, vertical boost ticks, blast,
+        //    staging tick (0 = single stage), stage centre behind the missile centre
         // Must clearly outrun NTM missiles (~4-8 blocks/tick cruising) or it only catches them on descent.
-        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0),
-        TOR(12.0, 1.2, 22, 150, 5.0, 35f, 5);
+        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0, 0, 4f, 0, 0),
+        TOR(12.0, 1.2, 22, 150, 5.0, 35f, 5, 0, 3f, 0, 0),
+        // 53T6: hot launch straight out of the silo, ~100 g, then pitches over onto a target 3+ km out.
+        A135(18.0, 1.5, 8, 420, 10.0, 100f, 0, 8, 6f, 30, 1.925),
+        // 57E6: hot launch from the tube, the booster drops after half a second, the dart flies on.
+        PANTSIR(20.0, 3.0, 14, 170, 4.5, 40f, 0, 0, 3f, 10, 0.9);
 
-        final double maxSpeed, accel, turn;
-        final int life, cold;
+        final double maxSpeed, accel, turn, stageBack;
+        final int life, cold, boost, staging;
         final double fuse;
-        final float damage;
+        final float damage, blast;
 
-        Kind(double maxSpeed, double accel, double turnDeg, int life, double fuse, float damage, int cold) {
+        Kind(double maxSpeed, double accel, double turnDeg, int life, double fuse, float damage, int cold, int boost, float blast,
+             int staging, double stageBack) {
             this.maxSpeed = maxSpeed;
             this.accel = accel;
             this.turn = Math.toRadians(turnDeg);
@@ -47,10 +56,19 @@ public class EntitySAM extends Entity {
             this.fuse = fuse;
             this.damage = damage;
             this.cold = cold;
+            this.boost = boost;
+            this.blast = blast;
+            this.staging = staging;
+            this.stageBack = stageBack;
+        }
+
+        public double stageBack() {
+            return stageBack;
         }
     }
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> STAGED = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BOOLEAN);
 
     /** Client: glide between server positions like NTM missiles do, instead of snapping each packet. */
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
@@ -59,7 +77,9 @@ public class EntitySAM extends Entity {
     /** Target motion last tick, blocks/tick. */
     private Vec3 targetVel = Vec3.ZERO;
     private double speed, lastDist = Double.MAX_VALUE;
-    private int receding;
+    private int receding, waiting;
+    /** Game time of the last server tick: a launcher drops a missile that stopped ticking. */
+    long lastTicked;
 
     public EntitySAM(EntityType<? extends EntitySAM> type, Level level) {
         super(type, level);
@@ -70,14 +90,17 @@ public class EntitySAM extends Entity {
         EntitySAM sam = new EntitySAM(AirDefense.SAM.get(), level);
         sam.entityData.set(KIND, (byte) kind.ordinal());
         sam.setPos(pos);
-        sam.speed = kind == Kind.TOR ? 1.0 : 1.5;
+        sam.speed = switch (kind) { case TOR -> 1.0; case PANTSIR -> 4.0; default -> 1.5; };
         sam.setDeltaMovement(dir.scale(sam.speed));
         sam.face(dir);
         sam.target = target;
+        sam.lastTicked = level.getGameTime();
         level.addFreshEntity(sam);
-        level.playSound(null, pos.x, pos.y, pos.z, ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 10f, kind == Kind.TOR ? 1.3f : 0.9f);
+        float pitch = switch (kind) { case TOR -> 1.3f; case BUK -> 0.9f; case A135 -> 0.6f; case PANTSIR -> 1.5f; };
+        level.playSound(null, pos.x, pos.y, pos.z, ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 10f, pitch);
         return sam;
     }
+
 
     public Kind kind() {
         return Kind.values()[entityData.get(KIND)];
@@ -88,9 +111,21 @@ public class EntitySAM extends Entity {
         return tickCount > kind().cold;
     }
 
+    /** Motor section already dropped. */
+    public boolean staged() {
+        return entityData.get(STAGED);
+    }
+
+    private void stage(Vec3 vel) {
+        entityData.set(STAGED, true);
+        Vec3 dir = vel.normalize();
+        EntitySpentStage.drop(level(), kind(), position().subtract(dir.scale(kind().stageBack)), vel.scale(0.5), getYRot(), getXRot());
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(KIND, (byte) 0);
+        builder.define(STAGED, false);
     }
 
     @Override
@@ -112,12 +147,16 @@ public class EntitySAM extends Entity {
             detonate(position());
             return;
         }
+        lastTicked = level().getGameTime();
         ChunkUtil.holdOwnChunk(this);
         if (target != null && !target.isAlive()) target = null;
 
         Vec3 vel = getDeltaMovement();
         if (tickCount <= k.cold) {
             vel = new Vec3(0, Math.max(0.2, 1.0 - tickCount * 0.1), 0);  // catapult: up, slowing
+        } else if (tickCount <= k.boost) {
+            speed = Math.min(speed + k.accel, k.maxSpeed);  // out of the silo: straight up, full thrust
+            vel = new Vec3(0, speed, 0);
         } else {
             Vec3 dir = vel.normalize();
             double cap = k.maxSpeed;
@@ -140,6 +179,15 @@ public class EntitySAM extends Entity {
             vel = dir.scale(speed);
         }
 
+        if (k.staging > 0 && tickCount >= k.staging && !staged()) stage(vel);
+
+        // At up to 20 blocks a tick the next chunk may not tick entities yet: wait for it, give up after 2 s.
+        if (!holdAhead(this, vel)) {
+            if (++waiting > 40) detonate(position());
+            return;
+        }
+        waiting = 0;
+
         Vec3 from = position(), to = from.add(vel);
         if (target != null) {
             Vec3 tp = center(target);
@@ -149,14 +197,30 @@ public class EntitySAM extends Entity {
                 return;
             }
         }
-        BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-        if (hit.getType() != HitResult.Type.MISS) {
-            detonate(hit.getLocation());
-            return;
+        // Not while still climbing out of the silo: the shaft's own blocks are around it.
+        if (tickCount > k.boost) {
+            BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            if (hit.getType() != HitResult.Type.MISS) {
+                detonate(hit.getLocation());
+                return;
+            }
         }
         setPos(to);
         setDeltaMovement(vel);
         face(vel);
+    }
+
+    /**
+     * Ticket the chunks the next three steps run through (a ticket only takes effect a tick later, and
+     * only its centre chunk ticks entities); true once the chunk of the next step ticks entities.
+     */
+    static boolean holdAhead(Entity e, Vec3 vel) {
+        ServerLevel server = (ServerLevel) e.level();
+        for (int k = 0; k <= 3; k++) {
+            Vec3 p = e.position().add(vel.scale(k));
+            ChunkUtil.holdForEntity(server, new ChunkPos(Mth.floor(p.x) >> 4, Mth.floor(p.z) >> 4), 2);
+        }
+        return server.isPositionEntityTicking(BlockPos.containing(e.position().add(vel)));
     }
 
     /** Lead point: where the target will be when we get there, from its last-tick motion. */
@@ -189,7 +253,7 @@ public class EntitySAM extends Entity {
         Kind k = kind();
         ServerLevel server = (ServerLevel) level();
         // Airburst: entity damage and the boom, no terrain damage.
-        server.explode(this, at.x, at.y, at.z, k == Kind.BUK ? 4f : 3f, Level.ExplosionInteraction.NONE);
+        server.explode(this, at.x, at.y, at.z, k.blast, Level.ExplosionInteraction.NONE);
         if (target != null && center(target).distanceTo(at) <= k.fuse * 1.5) {
             DamageSource src = damageSources().explosion(this, null);
             // NTM missiles have 50 health and blow up on their own when it runs out.

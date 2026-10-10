@@ -9,7 +9,7 @@ import com.hbm.render.loader.HFRWavefrontObject;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-/** Buk: carriage yaw, fire-control radar unfold, rail elevation with the hydraulic ram following it. */
+/** Buk (9A310): carriage yaw with the radome in the nose, rail elevation about the rear head, the rams following it. */
 public class RenderBuk extends RenderTurretBase<BlockEntityBuk> {
 
     static final HFRWavefrontObject MESH = Meshes.load(AirDefense.id("models/obj/buk.obj"));
@@ -18,18 +18,16 @@ public class RenderBuk extends RenderTurretBase<BlockEntityBuk> {
             LAUNCHER = MESH.partId("Launcher"), RAM_CYL = MESH.partId("RamCylinder"), RAM_ROD = MESH.partId("RamRod");
     private static final int[] MISSILES = MESH.partIds("Missile1", "Missile2", "Missile3", "Missile4");
 
-    // Hinges in model space (y, z): launcher, radar, ram on the deck (A) and its lug on the rail (B).
-    private static final float LY = 2.4f, LZ = 1.4f, RY = 2.45f, RZ = -1.4f;
-    private static final float AY = 1.45f, AZ = -0.2f, BY = 2.45f, BZ = -1.4f;
+    // Hinges in model space (y, z): launcher, ram on the hull (A) and its lug on the rail (B).
+    private static final float LY = 2.05f, LZ = 2.6f;
+    private static final float AY = 1.63f, AZ = 0.6f, BY = 2.45f, BZ = 1.2f;
 
     @Override
     protected void emit(BlockEntityBuk t, State s, TurretFrame frame) {
         TurretFrame.Part carriage = frame.push().obj(MESH, CARRIAGE).texture(TEX);
         carriage.pose.rotateY((s.yaw - 180F) * Mth.DEG_TO_RAD);
 
-        float unfold = Mth.lerp(s.partialTicks, t.lastRadar, t.radar) * Mth.HALF_PI;
-        frame.push().obj(MESH, RADAR).texture(TEX).pose
-                .set(carriage.pose).translate(0, RY, RZ).rotateX(unfold).translate(0, -RY, -RZ);
+        frame.push().obj(MESH, RADAR).texture(TEX).pose.set(carriage.pose);
 
         float pitch = s.pitch * Mth.DEG_TO_RAD;
         TurretFrame.Part launcher = frame.push().obj(MESH, LAUNCHER).texture(TEX);

@@ -10,5 +10,11 @@
   "item.ntm_air_defense.target_caller": "Practice Target Caller (debug)",
   "entity.ntm_air_defense.target_drone": "Practice V-2",
   "ntm_air_defense.caller.no_target": "Nothing in sight to mark (up to 400 blocks)",
-  "ntm_air_defense.caller.launched": "Practice V-2 launched %s blocks to the %s, inbound to %s %s %s"
+  "ntm_air_defense.caller.launched": "Practice V-2 launched %s blocks to the %s, inbound to %s %s %s",
+  "item.ntm_air_defense.abm_53t6": "53T6 Anti-Ballistic Missile",
+  "block.ntm_air_defense.radar_nebo": "Nebo Early-Warning Radar",
+  "block.ntm_air_defense.turret_pantsir": "Pantsir Gun-Missile Module",
+  "item.ntm_air_defense.sam_pantsir": "57E6 Surface-to-Air Missile",
+  "block.ntm_air_defense.defense_assembler": "Air Defence Assembly Hall",
+  "entity.ntm_air_defense.tracer": "Gun Tracer"
 }

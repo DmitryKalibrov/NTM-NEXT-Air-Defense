@@ -8,7 +8,7 @@
 - Модели: `src/main/resources/assets/ntm_air_defense/models/obj/{buk,tor}.obj` + `.hbm_mesh`
   (`tools/obj2mesh.py` — компилятор в формат NTM, проверен чтением родного turret_himars.hbm_mesh).
 - Текстуры: `textures/block/{buk,tor}.png`. Анимации: `docs/animation.md`
-  (поправка: петли переднего ряда люков Тора в OBJ — (x, 2.22, −0.11)).
+  (поправка: петли переднего ряда люков Тора в OBJ — (x, 3.03, ∓0.78)).
 - Каркас Gradle: build.gradle.kts, settings, gradle.properties.
 
 ## API аддонов NTM
@@ -52,3 +52,11 @@ mixin/RadarLinkerMixin; ресурсы: blockstates, модели блоков/�
 лут, рецепты сборочной машины. Сборка: `build.ps1` (копирует NTM + Crankshaft в libs, собирает,
 ставит в инстанс). Следующий шаг — первая компиляция и правка ошибок API, затем тест в игре
 (смещения/масштабы предметов в models/item подобраны на глаз).
+
+## Сборочный цех (defense_assembler)
+Блок `MachineDefenseAssembler` (9×9×7) наследует сборочную машину NTM; BE `BlockEntityDefenseAssembler`.
+Тип BE и набор рецептов подменяются в конструкторе NTM mixin'ом `AssemblyMachineMixin` (BlockEntity
+проверяет тип по блоку уже в super(), поэтому только так). Экран выбора рецептов — `AssemblerScreenMixin`.
+Свой тип рецепта `ntm_air_defense:defense_assembler` (`DefenseRecipe`, `DefenseAssemblerRecipes`),
+регистрируется и синхронизируется на клиент через `ModRecipes.addon(...)`; JSON как у сборочной машины.
+Рецепты пусковых: data/ntm_air_defense/recipe/defense_assembler/. Ракеты остаются в сборочной машине NTM.

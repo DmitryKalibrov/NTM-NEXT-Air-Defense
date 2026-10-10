@@ -24,7 +24,7 @@ final class SamTrail {
             return;
         }
 
-        float scale = sam.kind() == EntitySAM.Kind.BUK ? 0.6f : 0.4f;
+        float scale = switch (sam.kind()) { case BUK -> 0.6f; case TOR -> 0.4f; case A135 -> sam.staged() ? 0.3f : 1.2f; case PANTSIR -> sam.staged() ? 0.2f : 0.5f; };
         double pressure = Environment.particlePressure(sam.level());
         int count = (int) Math.max(Math.min(len, 16), 1);
         for (int i = 0; i < count; i++) {

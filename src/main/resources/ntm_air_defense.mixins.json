@@ -4,9 +4,13 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "RadarLinkerMixin",
-    "TurretMenuMixin"
+    "TurretMenuMixin",
+    "AssemblyMachineMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "client": [
+    "AssemblerScreenMixin"
+  ]
 }

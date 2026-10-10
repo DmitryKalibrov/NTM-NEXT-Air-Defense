@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "ntm_air_defense:block/defense_assembler"
+    },
+    "facing=north": {
+      "model": "ntm_air_defense:block/defense_assembler"
+    },
+    "facing=south": {
+      "model": "ntm_air_defense:block/defense_assembler"
+    },
+    "facing=west": {
+      "model": "ntm_air_defense:block/defense_assembler"
+    }
+  }
+}

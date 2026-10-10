@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "ntm_air_defense:block/radar_nebo"
+    },
+    "facing=north": {
+      "model": "ntm_air_defense:block/radar_nebo"
+    },
+    "facing=south": {
+      "model": "ntm_air_defense:block/radar_nebo"
+    },
+    "facing=west": {
+      "model": "ntm_air_defense:block/radar_nebo"
+    }
+  }
+}

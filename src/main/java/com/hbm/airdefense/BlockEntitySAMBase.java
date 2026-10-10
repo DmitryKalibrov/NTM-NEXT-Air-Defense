@@ -83,6 +83,16 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     /** Put a missile into the air; null if it is not out yet (delayed launch). */
     protected abstract @Nullable EntitySAM launch(Entity target, int index);
 
+    /**
+     * Radar horizon: a site higher above sea level sees and engages further. Grows with the square
+     * root of the height (+20% at 16 blocks up, +40% at 64) and stops at +50%; no change at or
+     * below sea level.
+     */
+    protected double reach(double base) {
+        double above = getTurretPos().y - level.getSeaLevel();
+        return base * Math.min(1.5, 1 + 0.05 * Math.sqrt(Math.max(0, above)));
+    }
+
     protected int cooldownTicks() {
         return 40;
     }
@@ -120,7 +130,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     @Override
     public double getDetectorRange() {
-        return range();
+        return reach(range());
     }
 
     @Override
@@ -179,7 +189,12 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         if (cooldown > 0) cooldown--;
         if (target != null) {
             aim(tPos);
-            inFlight.removeIf(s -> !s.isAlive());
+            // a missile that stopped ticking (stuck in a chunk that never loaded) would block the salvo
+            inFlight.removeIf(s -> {
+                boolean frozen = s.isAlive() && level.getGameTime() - s.lastTicked > 40;
+                if (frozen) s.discard();
+                return frozen || !s.isAlive();
+            });
             boolean busy = inFlight.size() >= salvo();
             if ((aligned || !needsAlignment()) && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
                 EntitySAM sam = launch(target, capacity() - ammo);
@@ -206,7 +221,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     private boolean stillValid(Entity e) {
         return e.isAlive() && e.level() == level && isAirTarget(e)
-                && getEntityPos(e).distanceTo(getTurretPos()) <= range() * 1.1;
+                && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1;
     }
 
     private @Nullable Entity findTarget() {
@@ -219,11 +234,11 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
                 if (e != null) seen.add(e);
             }
         }
-        double own = ownRadarRange();
+        double own = reach(ownRadarRange());
         if (own > 0) seen.addAll(level.getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(own)));
 
         Entity best = null;
-        double closest = range();
+        double closest = reach(range());
         for (Entity e : seen) {
             double d = getEntityPos(e).distanceTo(pos);
             if (d < closest && d > getDetectorGrace() && isAirTarget(e)) {

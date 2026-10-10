@@ -8,15 +8,15 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4d;
 
 /**
- * Buk: no search radar of its own, needs a linked NTM radar. Raises the rail to 40 degrees, the
- * fire-control dish unfolds only past 35 (below that it would hit the missiles), then fires.
+ * Buk (9A310): no search radar of its own, needs a linked NTM radar. Raises the rail to 40 degrees
+ * about its rear head and fires once the 9S35 in the nose is up.
  */
 public class BlockEntityBuk extends BlockEntitySAMBase {
 
-    static final double ELEVATION = Math.toRadians(40), RADAR_CLEAR = Math.toRadians(35);
-    /** Launcher hinge (y, z) and rail x positions in model space; missiles sit at y 2.98, z -0.7. */
-    static final double PIVOT_Y = 2.4, PIVOT_Z = 1.4;
-    static final double[] RAIL_X = {-1.05, -0.35, 0.35, 1.05};
+    static final double ELEVATION = Math.toRadians(40);
+    /** Launcher hinge (y, z) and rail x positions in model space; missile centres sit at y 3.15, z -0.275. */
+    static final double PIVOT_Y = 2.05, PIVOT_Z = 2.6;
+    static final double[] RAIL_X = {-1.125, -0.375, 0.375, 1.125};
 
     public BlockEntityBuk(BlockPos pos, BlockState state) {
         super(AirDefense.BUK_BE.get(), pos, state);
@@ -38,8 +38,8 @@ public class BlockEntityBuk extends BlockEntitySAMBase {
     }
 
     /**
-     * On combat duty (switched on and powered) the rail stays raised and the dish open, so a
-     * detected target only costs the slew. Folds up only when switched off or out of power.
+     * On combat duty (switched on and powered) the rail stays raised and the radar up, so a
+     * detected target only costs the slew. Lowers only when switched off or out of power.
      */
     @Override
     protected void stow() {
@@ -53,9 +53,9 @@ public class BlockEntityBuk extends BlockEntitySAMBase {
         }
     }
 
-    /** The dish may only swing up once the missiles have cleared it. */
+    /** The 9S35 under the nose radome needs a moment to come up after switching on. */
     private void deployRadar() {
-        setRadar(rotationPitch >= RADAR_CLEAR ? Math.min(1f, radar + 0.1f) : Math.max(0f, radar - 0.1f));
+        setRadar(Math.min(1f, radar + 0.1f));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class BlockEntityBuk extends BlockEntitySAMBase {
     @Override
     protected EntitySAM launch(Entity target, int index) {
         Matrix4d m = Geo.hingeX(Geo.carriage(this), PIVOT_Y, PIVOT_Z, rotationPitch);
-        Vec3 pos = Geo.point(m, RAIL_X[ammo - 1], 2.98, -0.7);
+        Vec3 pos = Geo.point(m, RAIL_X[ammo - 1], 3.15, -0.275);
         Vec3 dir = Geo.dir(m, 0, 0, -1);
         return EntitySAM.fire(level, EntitySAM.Kind.BUK, pos, dir, target);
     }

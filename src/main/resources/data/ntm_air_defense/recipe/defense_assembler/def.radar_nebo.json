@@ -1,0 +1,34 @@
+{
+  "type": "ntm_air_defense:defense_assembler",
+  "duration": 7200,
+  "input_items": [
+    {
+      "ingredient": "hbm:machine_radar_large"
+    },
+    {
+      "count": 64,
+      "ingredient": "hbm:concrete_smooth"
+    },
+    {
+      "count": 32,
+      "ingredient": "hbm:magnetron"
+    },
+    {
+      "count": 16,
+      "ingredient": "#hbm:plates_welded/any_resistant_alloy"
+    },
+    {
+      "count": 8,
+      "ingredient": "hbm:circuit_bismoid"
+    },
+    {
+      "count": 4,
+      "ingredient": "hbm:crt_display"
+    }
+  ],
+  "order": 85906,
+  "output_items": [
+    "ntm_air_defense:radar_nebo"
+  ],
+  "power": 100
+}

@@ -10,5 +10,11 @@
   "item.ntm_air_defense.target_caller": "Пульт вызова ракеты-мишени (отладка)",
   "entity.ntm_air_defense.target_drone": "Ракета-мишень Фау",
   "ntm_air_defense.caller.no_target": "Некуда навести: цель должна быть в пределах 400 блоков",
-  "ntm_air_defense.caller.launched": "Ракета-мишень стартовала в %s блоках на %s, летит в %s %s %s"
+  "ntm_air_defense.caller.launched": "Ракета-мишень стартовала в %s блоках на %s, летит в %s %s %s",
+  "item.ntm_air_defense.abm_53t6": "Противоракета 53Т6",
+  "block.ntm_air_defense.radar_nebo": "РЛС кругового обзора «Небо»",
+  "block.ntm_air_defense.turret_pantsir": "Боевой модуль ЗРПК «Панцирь»",
+  "item.ntm_air_defense.sam_pantsir": "Зенитная управляемая ракета 57Э6",
+  "block.ntm_air_defense.defense_assembler": "Сборочный цех техники ПВО",
+  "entity.ntm_air_defense.tracer": "Трассер"
 }

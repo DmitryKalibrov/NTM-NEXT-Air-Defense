@@ -1,14 +1,13 @@
 package com.hbm.airdefense;
 
-import com.hbm.blocks.turret.TurretBaseArtillery;
 import com.hbm.capability.MachineCaps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Buk launcher: the 4x4 artillery footprint, same as NTM's HIMARS. */
-public class TurretBuk extends TurretBaseArtillery {
+/** Buk launcher (9A310 turret, full size) on the 4x4 footprint. */
+public class TurretBuk extends TurretSAMBase {
 
     public TurretBuk(BlockBehaviour.Properties props) {
         super(props);

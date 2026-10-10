@@ -31,14 +31,14 @@ public class BlockEntityTor extends BlockEntitySAMBase {
     /** Two missiles per target, like the real Tor; the vertical launch needs no slewing first. */
     @Override protected int salvo() { return 2; }
     @Override protected boolean needsAlignment() { return false; }
-    @Override public double getHeightOffset() { return 2.2; }
+    @Override public double getHeightOffset() { return 2.9; }
     @Override public double getTurretYawSpeed() { return 6.0; }
     @Override public double getTurretPitchSpeed() { return 3.0; }
     @Override public double getAcceptableInaccuracy() { return 20.0; }
 
     /** Cell c in model space: two rows of four, back row first. */
-    static double cellX(int c) { return -0.54 + 0.36 * (c % 4); }
-    static double cellZ(int c) { return c < 4 ? 0.6 : 0.1; }
+    static double cellX(int c) { return -0.72 + 0.48 * (c % 4); }
+    static double cellZ(int c) { return c < 4 ? 0.415 : -0.415; }
 
     @Override
     protected void aim(Vec3 t) {
@@ -69,7 +69,7 @@ public class BlockEntityTor extends BlockEntitySAMBase {
     public void tickServer() {
         super.tickServer();
         if (pending != null && level.getGameTime() >= launchTime + HATCH_LEAD) {
-            Vec3 pos = Geo.point(Geo.carriage(this), cellX(pendingCell), 2.3, cellZ(pendingCell));
+            Vec3 pos = Geo.point(Geo.carriage(this), cellX(pendingCell), 3.4, cellZ(pendingCell));
             launched(EntitySAM.fire(level, EntitySAM.Kind.TOR, pos, new Vec3(0, 1, 0), pending));
             pending = null;
         }

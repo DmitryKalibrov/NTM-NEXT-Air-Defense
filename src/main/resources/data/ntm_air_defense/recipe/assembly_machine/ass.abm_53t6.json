@@ -1,0 +1,38 @@
+{
+  "type": "hbm:assembly_machine",
+  "duration": 2400,
+  "input_items": [
+    {
+      "count": 2,
+      "ingredient": "hbm:fuel_tank_large"
+    },
+    {
+      "count": 2,
+      "ingredient": "hbm:thruster_large"
+    },
+    {
+      "ingredient": "hbm:warhead_generic_large"
+    },
+    {
+      "count": 8,
+      "ingredient": "#hbm:plates_welded/any_resistant_alloy"
+    },
+    {
+      "count": 16,
+      "ingredient": "#hbm:ingots/any_hard_plastic"
+    },
+    {
+      "count": 4,
+      "ingredient": "hbm:circuit_bismoid"
+    },
+    {
+      "count": 8,
+      "ingredient": "hbm:circuit_advanced"
+    }
+  ],
+  "order": 85904,
+  "output_items": [
+    "ntm_air_defense:abm_53t6"
+  ],
+  "power": 100
+}
