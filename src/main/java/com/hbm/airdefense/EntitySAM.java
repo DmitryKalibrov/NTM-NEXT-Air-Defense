@@ -56,7 +56,10 @@ public class EntitySAM extends Entity {
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
     private @Nullable Entity target;
     private @Nullable Vec3 lastTargetPos;
-    private double speed;
+    /** Target motion last tick, blocks/tick. */
+    private Vec3 targetVel = Vec3.ZERO;
+    private double speed, lastDist = Double.MAX_VALUE;
+    private int receding;
 
     public EntitySAM(EntityType<? extends EntitySAM> type, Level level) {
         super(type, level);
@@ -116,9 +119,24 @@ public class EntitySAM extends Entity {
         if (tickCount <= k.cold) {
             vel = new Vec3(0, Math.max(0.2, 1.0 - tickCount * 0.1), 0);  // catapult: up, slowing
         } else {
-            speed = Math.min(k.maxSpeed, speed + k.accel);
             Vec3 dir = vel.normalize();
-            if (target != null) dir = steer(dir, intercept().subtract(position()).normalize(), k.turn);
+            double cap = k.maxSpeed;
+            if (target != null) {
+                Vec3 aim = intercept();
+                double dist = center(target).distanceTo(position());
+                // Close in no faster than the turn rate allows (radius ~ speed / turn), but always
+                // faster than the target: a slow missile can't make the turn onto a near target.
+                cap = Math.clamp(Math.max(dist / 8, targetVel.length() * 1.5 + 1), 2.5, k.maxSpeed);
+                // Flew past and opening: self-destruct so the launcher can send the next one.
+                receding = dist > lastDist && dist < 80 ? receding + 1 : 0;
+                lastDist = dist;
+                if (receding >= 6) {
+                    detonate(position());
+                    return;
+                }
+                dir = steer(dir, aim.subtract(position()).normalize(), k.turn);
+            }
+            speed = Math.min(speed + k.accel, cap);
             vel = dir.scale(speed);
         }
 
@@ -144,10 +162,10 @@ public class EntitySAM extends Entity {
     /** Lead point: where the target will be when we get there, from its last-tick motion. */
     private Vec3 intercept() {
         Vec3 tp = center(target);
-        Vec3 tv = lastTargetPos == null ? Vec3.ZERO : tp.subtract(lastTargetPos);
+        targetVel = lastTargetPos == null ? Vec3.ZERO : tp.subtract(lastTargetPos);
         lastTargetPos = tp;
-        double tGo = tp.distanceTo(position()) / Math.max(speed, 0.5);
-        return tp.add(tv.scale(Math.min(tGo, 60)));
+        double tGo = tp.distanceTo(position()) / Math.max(speed, 2.5);
+        return tp.add(targetVel.scale(Math.min(tGo, 60)));
     }
 
     private static Vec3 steer(Vec3 dir, Vec3 want, double maxTurn) {
