@@ -37,7 +37,7 @@ public class RenderTor extends RenderTurretBase<BlockEntityTor> {
                 .translate(0, -TRACK_Y, -TRACK_Z);
 
         float dt = time - t.launchTime;
-        float open = smooth(dt / 8f) * (1f - smooth((dt - 30f) / 10f));
+        float open = smooth(dt / 4f) * (1f - smooth((dt - 30f) / 10f));
         for (int c = 0; c < HATCHES.length; c++) {
             boolean back = c < 4;  // back row hinges at the rear edge, front row at the front edge
             float z = back ? 0.81f : -0.11f;

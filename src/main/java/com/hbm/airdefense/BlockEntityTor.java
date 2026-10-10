@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockEntityTor extends BlockEntitySAMBase {
 
-    static final int HATCH_LEAD = 8;
+    static final int HATCH_LEAD = 4;
     static final double MAX_TRACK = Math.toRadians(60);
 
     private @Nullable Entity pending;
@@ -25,9 +25,12 @@ public class BlockEntityTor extends BlockEntitySAMBase {
 
     @Override protected int capacity() { return 8; }
     @Override protected Item ammoItem() { return AirDefense.SAM_TOR.get(); }
-    @Override protected double range() { return 250; }
-    @Override protected double ownRadarRange() { return 250; }
-    @Override protected int cooldownTicks() { return 20; }
+    @Override protected double range() { return 400; }
+    @Override protected double ownRadarRange() { return 400; }
+    @Override protected int cooldownTicks() { return 10; }
+    /** Two missiles per target, like the real Tor; the vertical launch needs no slewing first. */
+    @Override protected int salvo() { return 2; }
+    @Override protected boolean needsAlignment() { return false; }
     @Override public double getHeightOffset() { return 2.2; }
     @Override public double getTurretYawSpeed() { return 6.0; }
     @Override public double getTurretPitchSpeed() { return 3.0; }

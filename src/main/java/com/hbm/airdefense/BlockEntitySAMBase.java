@@ -53,7 +53,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     public long launchTime;
 
     private int cooldown;
-    private @Nullable EntitySAM inFlight;
+    private final List<EntitySAM> inFlight = new ArrayList<>();
 
     protected BlockEntitySAMBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -85,6 +85,16 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     protected int cooldownTicks() {
         return 40;
+    }
+
+    /** Missiles allowed in the air at once (a salvo on the same target). */
+    protected int salvo() {
+        return 1;
+    }
+
+    /** Must the launcher be pointed before firing (rail launch) or not (vertical launch). */
+    protected boolean needsAlignment() {
+        return true;
     }
 
     // ---- turret base plumbing ----
@@ -169,13 +179,14 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         if (cooldown > 0) cooldown--;
         if (target != null) {
             aim(tPos);
-            boolean busy = inFlight != null && inFlight.isAlive();
-            if (aligned && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
+            inFlight.removeIf(s -> !s.isAlive());
+            boolean busy = inFlight.size() >= salvo();
+            if ((aligned || !needsAlignment()) && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
                 EntitySAM sam = launch(target, capacity() - ammo);
                 removeItem(SLOT_AMMO_FIRST, 1);
                 setAmmo(ammo - 1);
                 cooldown = cooldownTicks();
-                if (sam != null) inFlight = sam;
+                if (sam != null) inFlight.add(sam);
             }
         } else {
             stow();
@@ -188,7 +199,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     /** Hand a delayed missile over once it is spawned. */
     protected void launched(EntitySAM sam) {
-        inFlight = sam;
+        inFlight.add(sam);
     }
 
     // ---- targeting ----

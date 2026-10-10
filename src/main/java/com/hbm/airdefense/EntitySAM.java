@@ -32,7 +32,7 @@ public class EntitySAM extends Entity {
         //    max speed, accel, turn deg/tick, life, fuse, damage, cold-launch ticks
         // Must clearly outrun NTM missiles (~4-8 blocks/tick cruising) or it only catches them on descent.
         BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0),
-        TOR(10.0, 0.9, 16, 150, 5.0, 35f, 8);
+        TOR(12.0, 1.2, 22, 150, 5.0, 35f, 5);
 
         final double maxSpeed, accel, turn;
         final int life, cold;
