@@ -46,8 +46,9 @@ public class ItemTargetCaller extends Item {
         Vec3 start = player.position().add(away.normalize().scale(dist));
         int sx = Mth.floor(start.x), sz = Mth.floor(start.z);
 
-        // The site is outside the loaded area: keep its chunk ticking until the missile holds its own.
-        ChunkUtil.holdForEntity(server, new ChunkPos(sx >> 4, sz >> 4), 2);
+        // The site is far outside the loaded area. A plain ticket only takes effect next tick, and a
+        // missile added to a chunk that doesn't tick entities yet just sits there; wait until it does.
+        ChunkUtil.loadTickingForEntity(server, new ChunkPos(sx >> 4, sz >> 4));
         int sy = server.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz);
 
         EntityTargetDrone drone = new EntityTargetDrone(AirDefense.TARGET_DRONE.get(), server);
