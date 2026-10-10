@@ -4,13 +4,15 @@ import com.hbm.inventory.recipes.ModRecipes;
 import com.hbm.registration.Addon;
 import com.hbm.registration.Reg;
 import java.util.Set;
-import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -98,7 +100,10 @@ public final class AirDefense implements Addon {
         SAM_PANTSIR = ns.item("sam_pantsir", Item::new, () -> new Item.Properties().stacksTo(12));
         ABM_53T6 = ns.item("abm_53t6", Item::new, () -> new Item.Properties().stacksTo(1));
 
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.COMBAT).register(out -> {
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id("main"), FabricCreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.ntm_air_defense"))
+                .icon(() -> new ItemStack(PANTSIR.get()))
+                .displayItems((params, out) -> {
             out.accept(new ItemStack(ASSEMBLER.get()));
             out.accept(new ItemStack(BUK.get()));
             out.accept(new ItemStack(TOR.get()));
@@ -109,7 +114,7 @@ public final class AirDefense implements Addon {
             out.accept(new ItemStack(ABM_53T6.get()));
             out.accept(new ItemStack(NEBO.get()));
             out.accept(new ItemStack(TARGET_CALLER.get()));
-        });
+        }).build());
     }
 
     private static BlockBehaviour.Properties turretProps() {

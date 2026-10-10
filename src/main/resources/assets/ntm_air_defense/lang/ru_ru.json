@@ -16,5 +16,6 @@
   "block.ntm_air_defense.turret_pantsir": "Боевой модуль ЗРПК «Панцирь»",
   "item.ntm_air_defense.sam_pantsir": "Зенитная управляемая ракета 57Э6",
   "block.ntm_air_defense.defense_assembler": "Сборочный цех техники ПВО",
-  "entity.ntm_air_defense.tracer": "Трассер"
+  "entity.ntm_air_defense.tracer": "Трассер",
+  "itemGroup.ntm_air_defense": "ПВО"
 }

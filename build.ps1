@@ -8,5 +8,5 @@ $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Remove-Item "$mods\ntm-air-defense-*.jar" -ErrorAction SilentlyContinue
-Copy-Item build\libs\ntm-air-defense-*.jar $mods\
+Get-ChildItem build\libs\ntm-air-defense-*.jar | Sort-Object LastWriteTime | Select-Object -Last 1 | Copy-Item -Destination $mods
 Write-Host "Installed:" (Get-ChildItem "$mods\ntm-air-defense-*.jar").Name

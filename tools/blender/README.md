@@ -9,7 +9,7 @@
 | `tor.py` | `tor.obj` | `textures/block/tor.png` (512) |
 | `pantsir.py` | `pantsir.obj` | `textures/block/pantsir.png` (512) |
 | `nebo.py` | `radar_nebo.obj` | `textures/block/radar_nebo.png` (512) |
-| `defense_assembler.py` | `defense_assembler.obj` | `textures/block/defense_assembler.png` (1024) |
+| `defense_assembler.py` | `defense_assembler.obj` (цех, кран, руки) | `textures/block/defense_assembler.png` (1024) |
 
 `helpers.py` — материалы (камуфляж, бетон, сталь в sRGB-цветах Бука/Тора) и примитивы. `bake.py` — UV-развёртка,
 запекание цвета в атлас, экспорт OBJ и список острых рёбер для контуров.

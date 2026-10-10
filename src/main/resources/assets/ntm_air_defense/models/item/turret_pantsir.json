@@ -4,6 +4,7 @@
   "gui_light": "side",
   "model": "ntm_air_defense:models/obj/pantsir.obj",
   "hidden": [
+    "Tracer",
     "PantsirStage",
     "PantsirDart"
   ],

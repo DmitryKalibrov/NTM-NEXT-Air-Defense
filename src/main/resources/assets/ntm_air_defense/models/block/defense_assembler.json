@@ -5,7 +5,12 @@
   "hidden": [
     "Bridge",
     "Trolley",
-    "Hook"
+    "Hook",
+    "Cable",
+    "ArmLower",
+    "ArmUpper",
+    "ArmHead",
+    "ArmSpike"
   ],
   "model": "ntm_air_defense:models/obj/defense_assembler.obj",
   "skins": {

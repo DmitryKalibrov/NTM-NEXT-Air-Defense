@@ -3,7 +3,27 @@
   "ambientocclusion": false,
   "gui_light": "side",
   "model": "ntm_air_defense:models/obj/pantsir.obj",
-  "hidden": [],
+  "hidden": [
+    "Base",
+    "Turret",
+    "SearchRadar",
+    "WeaponL",
+    "WeaponR",
+    "TrackRadar",
+    "Cap1",
+    "Cap2",
+    "Cap3",
+    "Cap4",
+    "Cap5",
+    "Cap6",
+    "Cap7",
+    "Cap8",
+    "Cap9",
+    "Cap10",
+    "Cap11",
+    "Cap12",
+    "Tracer"
+  ],
   "groups": [
     {
       "parts": [

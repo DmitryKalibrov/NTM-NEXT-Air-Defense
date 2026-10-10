@@ -9,8 +9,7 @@
       "parts": [
         "Hall",
         "Bridge",
-        "Trolley",
-        "Hook"
+        "Trolley"
       ],
       "texture": "h"
     }
