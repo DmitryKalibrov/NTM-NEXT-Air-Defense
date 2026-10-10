@@ -6,5 +6,9 @@
   "entity.ntm_air_defense.sam": "Зенитная ракета",
   "ntm_air_defense.linker.radar": "Радар %s запомнен. Shift+ПКМ по пусковой, чтобы привязать её.",
   "ntm_air_defense.linker.linked": "Пусковая привязана к радару %s",
-  "ntm_air_defense.linker.no_radar": "Сначала кликните линкером по радару"
+  "ntm_air_defense.linker.no_radar": "Сначала кликните линкером по радару",
+  "item.ntm_air_defense.target_caller": "Пульт вызова ракеты-мишени (отладка)",
+  "entity.ntm_air_defense.target_drone": "Ракета-мишень Фау",
+  "ntm_air_defense.caller.no_target": "Некуда навести: цель должна быть в пределах 400 блоков",
+  "ntm_air_defense.caller.launched": "Ракета-мишень стартовала в %s блоках на %s, летит в %s %s %s"
 }

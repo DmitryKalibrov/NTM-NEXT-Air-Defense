@@ -32,6 +32,8 @@ public final class AirDefense implements Addon {
     public static Reg.EntityHandle<EntitySAM> SAM;
     public static Reg.Handle<Item> SAM_BUK;
     public static Reg.Handle<Item> SAM_TOR;
+    public static Reg.EntityHandle<EntityTargetDrone> TARGET_DRONE;
+    public static Reg.Handle<ItemTargetCaller> TARGET_CALLER;
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
@@ -52,6 +54,11 @@ public final class AirDefense implements Addon {
                 .noLootTable().noSave().fireImmune().sized(0.4f, 0.4f)
                 .clientTrackingRange(63).updateInterval(1)
                 .build(ResourceKey.create(Registries.ENTITY_TYPE, id("sam"))));
+        TARGET_DRONE = ns.entity("target_drone", () -> EntityType.Builder.<EntityTargetDrone>of(EntityTargetDrone::new, MobCategory.MISC)
+                .noLootTable().fireImmune().sized(1.5f, 1.5f)
+                .clientTrackingRange(63).updateInterval(1)
+                .build(ResourceKey.create(Registries.ENTITY_TYPE, id("target_drone"))));
+        TARGET_CALLER = ns.item("target_caller", ItemTargetCaller::new, () -> new Item.Properties().stacksTo(1));
         SAM_BUK = ns.item("sam_buk", Item::new, () -> new Item.Properties().stacksTo(4));
         SAM_TOR = ns.item("sam_tor", Item::new, () -> new Item.Properties().stacksTo(8));
 
@@ -60,6 +67,7 @@ public final class AirDefense implements Addon {
             out.accept(new ItemStack(TOR.get()));
             out.accept(new ItemStack(SAM_BUK.get()));
             out.accept(new ItemStack(SAM_TOR.get()));
+            out.accept(new ItemStack(TARGET_CALLER.get()));
         });
     }
 

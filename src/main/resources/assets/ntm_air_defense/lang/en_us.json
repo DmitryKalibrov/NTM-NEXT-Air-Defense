@@ -6,5 +6,9 @@
   "entity.ntm_air_defense.sam": "Surface-to-Air Missile",
   "ntm_air_defense.linker.radar": "Radar at %s stored. Shift-click a SAM launcher to link it.",
   "ntm_air_defense.linker.linked": "Launcher linked to radar at %s",
-  "ntm_air_defense.linker.no_radar": "Click a radar with the linker first"
+  "ntm_air_defense.linker.no_radar": "Click a radar with the linker first",
+  "item.ntm_air_defense.target_caller": "Practice Target Caller (debug)",
+  "entity.ntm_air_defense.target_drone": "Practice V-2",
+  "ntm_air_defense.caller.no_target": "Nothing in sight to mark (up to 400 blocks)",
+  "ntm_air_defense.caller.launched": "Practice V-2 launched %s blocks to the %s, inbound to %s %s %s"
 }
