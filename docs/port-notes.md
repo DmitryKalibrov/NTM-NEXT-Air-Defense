@@ -5,7 +5,7 @@
 (`java -jar cfr.jar hbm.jar --outputdir src`, CFR 0.152 качается с Google-зеркала Maven).
 
 ## Готово
-- Модели: `src/main/resources/assets/ntm_air_defense/models/obj/{buk,tor}.obj` + `.hbm_mesh`
+- Модели: `common/src/main/resources/assets/ntm_air_defense/models/obj/{buk,tor}.obj` + `.hbm_mesh`
   (`tools/obj2mesh.py` — компилятор в формат NTM, проверен чтением родного turret_himars.hbm_mesh).
 - Текстуры: `textures/block/{buk,tor}.png`. Анимации: `docs/animation.md`
   (поправка: петли переднего ряда люков Тора в OBJ — (x, 3.03, ∓0.78)).

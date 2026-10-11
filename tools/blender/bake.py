@@ -1,7 +1,7 @@
 import bpy, bmesh, math, json
 
 R = "E:/ModPorting/ntm-air-defense/"
-A = R + "src/main/resources/assets/ntm_air_defense/"
+A = R + "common/src/main/resources/assets/ntm_air_defense/"
 SHARP = math.radians(46)  # 8- and 10-sided cylinders (45 and 36 deg facets) stay smooth
 NO_OUTLINE = ("Tracer",)
 PREVIEW_MOVED = ("BukMissile", "TorMissile", "PantsirStage", "PantsirDart")

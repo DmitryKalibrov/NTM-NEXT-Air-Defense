@@ -21,8 +21,8 @@ cd tools/blender
 { cat helpers.py buk.py bake.py; echo "bake('buk', 512, 'textures/block/buk.png', 'models/obj/buk.obj', 'blender/buk_m1.blend')"; } > /tmp/run.py
 python bl.py code /tmp/run.py
 cd ../..
-python tools/outline.py src/main/resources/assets/ntm_air_defense/textures/block/buk.png build/buk_outlines.json
-python tools/obj2mesh.py src/main/resources/assets/ntm_air_defense/models/obj/buk.obj
+python tools/outline.py common/src/main/resources/assets/ntm_air_defense/textures/block/buk.png build/buk_outlines.json
+python tools/obj2mesh.py common/src/main/resources/assets/ntm_air_defense/models/obj/buk.obj
 ```
 
 `bl.py shot out.png` снимает вьюпорт. Оси вращения частей — в `docs/animation.md`.
