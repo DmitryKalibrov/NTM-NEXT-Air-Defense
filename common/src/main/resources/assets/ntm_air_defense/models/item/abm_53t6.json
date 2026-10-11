@@ -1,0 +1,143 @@
+{
+  "fabric:type": "hbm:obj",
+  "loader": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "model": "ntm_air_defense:models/obj/abm_53t6.obj",
+  "hidden": [],
+  "groups": [
+    {
+      "parts": [
+        "A135Stage",
+        "A135Warhead"
+      ],
+      "texture": "m"
+    }
+  ],
+  "offset_y": 0.0,
+  "textures": {
+    "m": "ntm_air_defense:item/abm_53t6",
+    "particle": "ntm_air_defense:item/abm_53t6"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "scale": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "scale": [
+        0.22999999999999998,
+        0.22999999999999998,
+        0.22999999999999998
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "scale": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "scale": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "scale": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "scale": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ]
+    }
+  }
+}
