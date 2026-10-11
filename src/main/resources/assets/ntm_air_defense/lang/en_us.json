@@ -17,5 +17,10 @@
   "item.ntm_air_defense.sam_pantsir": "57E6 Surface-to-Air Missile",
   "block.ntm_air_defense.defense_assembler": "Air Defence Assembly Hall",
   "entity.ntm_air_defense.tracer": "Gun Tracer",
-  "itemGroup.ntm_air_defense": "Air Defence"
+  "itemGroup.ntm_air_defense": "Air Defence",
+  "gui.ntm_air_defense.missiles": "Missiles",
+  "gui.ntm_air_defense.missiles.players": "Missiles at players: %s",
+  "gui.ntm_air_defense.missiles.animals": "Missiles at passive mobs: %s",
+  "gui.ntm_air_defense.missiles.mobs": "Missiles at hostile mobs: %s",
+  "gui.ntm_air_defense.missiles.machines": "Missiles at machines: %s"
 }

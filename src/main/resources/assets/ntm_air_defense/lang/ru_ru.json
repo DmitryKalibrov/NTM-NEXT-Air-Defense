@@ -17,5 +17,10 @@
   "item.ntm_air_defense.sam_pantsir": "Зенитная управляемая ракета 57Э6",
   "block.ntm_air_defense.defense_assembler": "Сборочный цех техники ПВО",
   "entity.ntm_air_defense.tracer": "Трассер",
-  "itemGroup.ntm_air_defense": "ПВО"
+  "itemGroup.ntm_air_defense": "ПВО",
+  "gui.ntm_air_defense.missiles": "Ракеты",
+  "gui.ntm_air_defense.missiles.players": "Ракетами по игрокам: %s",
+  "gui.ntm_air_defense.missiles.animals": "Ракетами по пассивным: %s",
+  "gui.ntm_air_defense.missiles.mobs": "Ракетами по мобам: %s",
+  "gui.ntm_air_defense.missiles.machines": "Ракетами по машинам: %s"
 }

@@ -196,8 +196,9 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
                 return frozen || !s.isAlive();
             });
             boolean busy = inFlight.size() >= salvo();
-            if ((aligned || !needsAlignment()) && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
-                EntitySAM sam = launch(target, capacity() - ammo);
+            Entity shot = missileTarget();
+            if (shot != null && canLaunch() && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
+                EntitySAM sam = launch(shot, capacity() - ammo);
                 removeItem(SLOT_AMMO_FIRST, 1);
                 setAmmo(ammo - 1);
                 cooldown = cooldownTicks();
@@ -212,6 +213,16 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         networkPackNT(250);
     }
 
+    /** What the missiles go at; the aimed target unless a launcher picks its own. */
+    protected @Nullable Entity missileTarget() {
+        return target;
+    }
+
+    /** The launcher points where a missile can go now. */
+    protected boolean canLaunch() {
+        return aligned || !needsAlignment();
+    }
+
     /** Hand a delayed missile over once it is spawned. */
     protected void launched(EntitySAM sam) {
         inFlight.add(sam);
@@ -219,12 +230,27 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     // ---- targeting ----
 
-    private boolean stillValid(Entity e) {
+    protected boolean stillValid(Entity e) {
         return e.isAlive() && e.level() == level && isAirTarget(e)
                 && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1;
     }
 
-    private @Nullable Entity findTarget() {
+    protected @Nullable Entity findTarget() {
+        Vec3 pos = getTurretPos();
+        Entity best = null;
+        double closest = reach(range());
+        for (Entity e : seen()) {
+            double d = getEntityPos(e).distanceTo(pos);
+            if (d < closest && d > getDetectorGrace() && isAirTarget(e)) {
+                closest = d;
+                best = e;
+            }
+        }
+        return best;
+    }
+
+    /** Everything the linked radar and the own search radar see. */
+    protected List<Entity> seen() {
         Vec3 pos = getTurretPos();
         List<Entity> seen = new ArrayList<>();
         BlockEntityMachineRadar radarBe = linkedRadar();
@@ -236,17 +262,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         }
         double own = reach(ownRadarRange());
         if (own > 0) seen.addAll(level.getEntitiesOfClass(Entity.class, new AABB(pos, pos).inflate(own)));
-
-        Entity best = null;
-        double closest = reach(range());
-        for (Entity e : seen) {
-            double d = getEntityPos(e).distanceTo(pos);
-            if (d < closest && d > getDetectorGrace() && isAirTarget(e)) {
-                closest = d;
-                best = e;
-            }
-        }
-        return best;
+        return seen;
     }
 
     public @Nullable BlockEntityMachineRadar linkedRadar() {
