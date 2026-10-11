@@ -82,19 +82,11 @@ def pivot_origin(o, at):
     return o
 
 
-# ---------------- Base: platform, ring, power plug (static) ----------------
+# ---------------- Base: platform, ring (static) ----------------
 p = [cube("deck", (-2, -2, 0), (2, 2, DECK), M_DECK)]
 for sx in (-1, 1):
     p.append(cube("hz", (sx * 1.97 - 0.03, -1.6, DECK), (sx * 1.97 + 0.03, 1.6, DECK + 0.012), M_HAZARD))
 p.append(cyl("ring", 1.35, DECK, DECK + 0.15, M_STEEL, verts=16))
-PX0, PX1 = -1.0, 0.0
-p.append(cube("plugframe", (PX0, -2.06, 0.0), (PX1, -2.0, DECK), M_HAZARD))
-p.append(cube("plugpanel", (PX0 + 0.08, -2.08, 0.06), (PX1 - 0.08, -2.06, DECK - 0.06), M_OLIVE_D))
-p.append(cyl("socket", 0.17, 2.08, 2.22, M_STEEL, verts=12, axis="Y", at=((PX0 + PX1) / 2, 0, 0.32)))
-p.append(cyl("pin", 0.09, 2.22, 2.25, M_DARK, verts=10, axis="Y", at=((PX0 + PX1) / 2, 0, 0.32)))
-for x in (PX0 + 0.14, PX1 - 0.14):
-    for z in (0.12, DECK - 0.12):
-        p.append(cyl("bolt", 0.025, 2.08, 2.1, M_STEEL, verts=6, axis="Y", at=(x, 0, z)))
 join("Base", p)
 
 # ---------------- Turret (yaw) ----------------

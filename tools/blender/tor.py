@@ -62,7 +62,7 @@ def side_prism(name, profile, x0, x1, m):
     return put(o, m)
 
 
-# ---------------- TBase: platform, turret ring, the power plug cell (static) ----------------
+# ---------------- TBase: platform, turret ring (static) ----------------
 DECK = 0.6
 p = []
 p.append(cube("deck", (-2, -2, 0), (2, 2, DECK), M_DECK))
@@ -73,15 +73,6 @@ for k in range(4):  # cable/coolant boxes on the deck
     a = k * math.pi / 2 + math.pi / 4
     c = Vector((math.cos(a), math.sin(a), 0)) * 1.75
     p.append(cube("box", (c.x - 0.18, c.y - 0.18, DECK), (c.x + 0.18, c.y + 0.18, DECK + 0.15), M_OLIVE_D))
-# power plug: exactly the one block x -1..0 on the rear face (y = -2); cables meet it at mid height
-PX0, PX1 = -1.0, 0.0
-p.append(cube("plugframe", (PX0, -2.06, 0.0), (PX1, -2.0, DECK), M_HAZARD))
-p.append(cube("plugpanel", (PX0 + 0.08, -2.08, 0.06), (PX1 - 0.08, -2.06, DECK - 0.06), M_OLIVE_D))
-p.append(cyl("socket", 0.17, 2.08, 2.22, M_STEEL, verts=12, axis="Y", at=((PX0 + PX1) / 2, 0, 0.32)))
-p.append(cyl("pin", 0.09, 2.22, 2.25, M_DARK, verts=10, axis="Y", at=((PX0 + PX1) / 2, 0, 0.32)))
-for x in (PX0 + 0.14, PX1 - 0.14):
-    for z in (0.12, DECK - 0.12):
-        p.append(cyl("bolt", 0.025, 2.08, 2.1, M_STEEL, verts=6, axis="Y", at=(x, 0, z)))
 join("TBase", p)
 
 # ---------------- Turret (yaw) ----------------
