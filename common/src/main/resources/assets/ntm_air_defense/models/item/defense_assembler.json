@@ -4,7 +4,14 @@
   "ambientocclusion": false,
   "gui_light": "side",
   "model": "ntm_air_defense:models/obj/defense_assembler.obj",
-  "hidden": [],
+  "hidden": [
+    "Hook",
+    "Cable",
+    "ArmLower",
+    "ArmUpper",
+    "ArmHead",
+    "ArmSpike"
+  ],
   "groups": [
     {
       "parts": [
