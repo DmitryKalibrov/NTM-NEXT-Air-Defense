@@ -68,16 +68,16 @@ mixin/RadarLinkerMixin; ресурсы: blockstates, модели блоков/�
 Переключатели ракет — боковая панель в экране турели NTM (`TurretScreenMixin`), кнопки `toggle` 20–23,
 синхронизация — sync unit 15.
 
-## NTM 1.1.0: раскладки мультиблоков
-В 1.1.0 убраны `getDimensions`/`getOffset`/`visitCells`/`visitPassiveCells`: форма мультиблока берётся из
-`hbm/multiblock_layouts.nbt`, который запекает datagen NTM (`MultiblockLayouts.of`, `addSource(anchor, namespace)`
-читает `/<namespace>/multiblock_layouts.nbt`). Генератора в релизных jar нет, поэтому аддон отдаёт раскладку
-через крючок `BlockMultiblockCore.runtimeLayout(int caps)` (`installBakedLayout` берёт его, если он не null).
+## NTM 1.0.3+: раскладки мультиблоков
+С 1.0.3 (и в тестовых 1.1.0) убраны `getDimensions`/`getOffset`/`visitCells`/`visitPassiveCells`: форма мультиблока
+берётся из `hbm/multiblock_layouts.nbt`, который запекает datagen NTM (`MultiblockLayouts.of`; `addSource(anchor,
+namespace)` читает `/<namespace>/multiblock_layouts.nbt`). Генератора в релизных jar нет, поэтому аддон отдаёт
+раскладку через крючок `BlockMultiblockCore.runtimeLayout(int caps)` (`installBakedLayout` берёт его, если он не null).
 
-- `common/src/ntm102` — классы формы для NTM 1.0.2 (как раньше), `common/src/ntm110` — для 1.1.0:
-  `LegacyLayout.bake(caps, dims, offset, perFacing, shape)` строит `MultiblockLayout` из описания в стиле 1.0.2.
-- Сборка под 1.1.0: `gradlew build -Pntm=110` (jar `...+ntm1.1.jar`), компилируется против закрытых тестовых
-  сборок в `../ntm-test-builds` (не публиковать). Диапазон `hbm` в метаданных у каждого варианта свой.
+- `common/src/ntm103` — классы формы для NTM 1.0.3+ (по умолчанию): `LegacyLayout.bake(caps, dims, offset, perFacing,
+  shape)` строит `MultiblockLayout` из описания в стиле 1.0.2. `common/src/ntm102` — для NTM 1.0.2,
+  `gradlew build -Pntm=102` (jar `...+ntm1.0.2.jar`). Диапазон `hbm` в метаданных у каждого варианта свой.
+- NTM 1.0.3 требует Crankshaft 1.6.0.
 - Правила генератора NTM (сверено побайтно с запечённой сборочной машиной и большим радаром): ячейки — коробка
   по dims без ядра, `offsets` для каждой стороны (индекс `get2DDataValue`); маски портов уже локальные и не
   поворачиваются, позиции — через `MultiblockMaskTable.localX/Y/Z`; одна таблица со стороны SOUTH на все стороны;

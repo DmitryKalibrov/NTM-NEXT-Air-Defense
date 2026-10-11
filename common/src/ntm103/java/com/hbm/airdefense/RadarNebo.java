@@ -18,7 +18,7 @@ public class RadarNebo extends MachineRadarLarge {
         super(props);
     }
 
-    /** NTM 1.1.0: the large radar's power ports (the four cells around the core) on the Nebo's 5x5 box. */
+    /** NTM 1.0.3+: the large radar's power ports (the four cells around the core) on the Nebo's 5x5 box. */
     @Override
     protected MultiblockLayout runtimeLayout(int caps) {
         return LegacyLayout.bake(caps, DIMENSIONS, 2, false, new LegacyLayout.Shape() {

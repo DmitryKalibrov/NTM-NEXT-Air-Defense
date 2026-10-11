@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * SAM launcher on the 4x4 artillery footprint. Power comes in only through the plug modelled on the
- * rear of the platform; ammo through any cell. NTM 1.1.0 variant: the layout is built at runtime.
+ * rear of the platform; ammo through any cell. NTM 1.0.3+ variant: the layout is built at runtime.
  */
 public abstract class TurretSAMBase extends TurretBaseArtillery {
 

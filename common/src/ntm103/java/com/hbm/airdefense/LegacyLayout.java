@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
 /**
- * NTM 1.1.0 no longer works a multiblock's cells out from its block: it reads a layout baked by NTM's
+ * NTM 1.0.3 no longer works a multiblock's cells out from its block: it reads a layout baked by NTM's
  * datagen, which addon blocks do not get. This builds that layout at runtime from the NTM 1.0.2-style
  * description (dimensions, offset, port cells, passive cells), the same way NTM's baker does: checked
  * byte for byte against NTM's own baked assembly machine and large radar (see docs/port-notes.md).
@@ -87,8 +87,21 @@ final class LegacyLayout {
         }
         int[] preview = new int[9];
         System.arraycopy(dims, 0, preview, 0, 6);
-        MultiblockLayout.Placement placement = new MultiblockLayout.Placement(dims.clone(), offset, 0, preview, new double[0], new int[0], ports.toIntArray());
-        return new MultiblockLayout(caps, tables, offsets, clearance, placement, MultiblockLayout.CellGeometry.NONE);
+        return new MultiblockLayout(caps, tables, offsets, clearance, placement(dims.clone(), offset, preview, ports.toIntArray()),
+                MultiblockLayout.CellGeometry.NONE);
+    }
+
+    /** NTM 1.1.0 adds preview colours and port arrows to the placement; 1.0.3 has neither. */
+    private static MultiblockLayout.Placement placement(int[] dims, int offset, int[] preview, int[] ports) {
+        try {
+            return MultiblockLayout.Placement.class
+                    .getConstructor(int[].class, int.class, int.class, int[].class, double[].class, int[].class, int[].class)
+                    .newInstance(dims, offset, 0, preview, new double[0], new int[0], ports);
+        } catch (NoSuchMethodException e) {
+            return new MultiblockLayout.Placement(dims, offset, 0, preview, new double[0]);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static int lx(BlockPos p, Direction f) {

@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Defence assembly hall: NTM's assembly machine on a 9x9x7 footprint, with its own recipe set (the
- * launchers). Power, items and fluids connect along the whole ground-level rim. NTM 1.1.0 variant:
+ * launchers). Power, items and fluids connect along the whole ground-level rim. NTM 1.0.3+ variant:
  * the layout is built at runtime.
  */
 public class MachineDefenseAssembler extends MachineAssemblyMachine {
