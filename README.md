@@ -66,13 +66,14 @@
 
 - **[NTM-NEXT: Distant Thunder](https://github.com/DmitryKalibrov/NTM-NEXT-Distant-Thunder)** 1.2.0+ —
   пуски, очереди пушек и подрывы зенитных ракет слышны за километры, с задержкой по скорости звука.
-- **[NTM × Distant Horizons Compat](https://github.com/DmitryKalibrov/NTM-NEXT-DH-compatibility-addon)** —
-  ракеты и трассеры видны далеко за пределами прорисовки.
+- **Дальность прорисовки:** на NTM-NEXT 1.0.3+ зенитные ракеты, ступени, мишени и трассеры видны далеко за
+  пределами прорисовки средствами самого NTM (`FarVisible`). На NTM 1.0.2 для этого нужен
+  [NTM × Distant Horizons Compat](https://github.com/DmitryKalibrov/NTM-NEXT-DH-compatibility-addon).
 
 ## Установка
 
-Требует NTM-NEXT (`hbm`) ≥ 1.0.2. Ставить на сервер и клиент. В каждом релизе два jar:
-`ntm-air-defense-fabric-*.jar` (нужен Fabric API) и `ntm-air-defense-neoforge-*.jar`.
+Требует NTM-NEXT (`hbm`) 1.0.3+ (с Crankshaft 1.6.0). Ставить на сервер и клиент. В каждом релизе jar для Fabric
+(нужен Fabric API) и NeoForge: `ntm-air-defense-<загрузчик>-*.jar` для NTM 1.0.3+ и `...+ntm1.0.2.jar` для NTM 1.0.2.
 
 ## Сборка
 

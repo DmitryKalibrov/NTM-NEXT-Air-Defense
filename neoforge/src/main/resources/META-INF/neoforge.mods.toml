@@ -11,6 +11,9 @@ description = "Buk, Tor and Pantsir SAM launchers, the A-135 interceptor and the
 [[mixins]]
 config = "ntm_air_defense.mixins.json"
 
+[[mixins]]
+config = "ntm_air_defense.ntm.mixins.json"
+
 [[dependencies.ntm_air_defense]]
 modId = "minecraft"
 type = "required"

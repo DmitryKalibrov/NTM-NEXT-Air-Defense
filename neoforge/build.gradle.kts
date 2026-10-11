@@ -15,6 +15,7 @@ sourceSets.main {
     java.srcDir("../common/src/main/java")
     java.srcDir("../common/src/ntm$ntm/java")
     resources.srcDir("../common/src/main/resources")
+    resources.srcDir("../common/src/ntm$ntm/resources")
 }
 
 neoForge {
