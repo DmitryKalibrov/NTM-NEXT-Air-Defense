@@ -72,8 +72,8 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
 
     @Override protected int capacity() { return 12; }
     @Override protected Item ammoItem() { return AirDefense.SAM_PANTSIR.get(); }
-    @Override protected double range() { return 400; }
-    @Override protected double ownRadarRange() { return 400; }
+    @Override protected double range() { return 900; }
+    @Override protected double ownRadarRange() { return 900; }
     @Override protected int cooldownTicks() { return 8; }
     @Override protected int salvo() { return 2; }
     @Override public double getHeightOffset() { return 1.65; }
@@ -152,7 +152,7 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
     private boolean wantMissile(Entity e) {
         Vec3 at = getEntityPos(e);
         double d = at.distanceTo(getTurretPos());
-        if (d < MISSILE_MIN || d > reach(range()) || !missileOk(e) || heightAboveGround(at) < MISSILE_MIN_HEIGHT || !inSight(at)) return false;
+        if (d < MISSILE_MIN || d > reach(range()) || !missileOk(e) || heightAboveGround(at) < MISSILE_MIN_HEIGHT || !unmasked(at)) return false;
         if (d > GUN_RANGE || !gunsReady() || !gunOk(e)) return true;
         // inside gun reach: only for a missile closing too fast for the guns alone
         double closing = e.getDeltaMovement().dot(getTurretPos().subtract(at).normalize());

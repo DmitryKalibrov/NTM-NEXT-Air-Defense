@@ -25,8 +25,8 @@ public class BlockEntityTor extends BlockEntitySAMBase {
 
     @Override protected int capacity() { return 8; }
     @Override protected Item ammoItem() { return AirDefense.SAM_TOR.get(); }
-    @Override protected double range() { return 400; }
-    @Override protected double ownRadarRange() { return 400; }
+    @Override protected double range() { return 750; }
+    @Override protected double ownRadarRange() { return 750; }
     @Override protected int cooldownTicks() { return 10; }
     /** Two missiles per target, like the real Tor; the vertical launch needs no slewing first. */
     @Override protected int salvo() { return 2; }

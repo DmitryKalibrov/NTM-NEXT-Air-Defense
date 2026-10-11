@@ -1,9 +1,13 @@
 package com.hbm.airdefense;
 
 import com.hbm.entity.missile.EntityMissileBaseNT;
+import com.hbm.airdefense.mixin.LevelAccessor;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ChunkUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,24 +35,27 @@ import org.jspecify.annotations.Nullable;
  */
 public class EntitySAM extends Entity {
 
+    /** Direct holder: no registry entry needed, sounds.json is enough. */
+    private static final Holder<SoundEvent> INTERCEPT = Holder.direct(SoundEvent.createVariableRangeEvent(AirDefense.id("sam.intercept_near")));
+
     public enum Kind {
         //    max speed, accel, turn deg/tick, life, fuse, damage, cold-launch ticks, vertical boost ticks, blast,
-        //    staging tick (0 = single stage), stage centre behind the missile centre
+        //    staging tick (0 = single stage), stage centre behind the missile centre, miss chance
         // Must clearly outrun NTM missiles (~4-8 blocks/tick cruising) or it only catches them on descent.
-        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0, 0, 4f, 0, 0),
-        TOR(12.0, 1.2, 22, 150, 5.0, 35f, 5, 0, 3f, 0, 0),
+        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0, 0, 4f, 0, 0, 0.15),
+        TOR(12.0, 1.2, 22, 220, 5.0, 35f, 5, 0, 3f, 0, 0, 0.15),
         // 53T6: hot launch straight out of the silo, ~100 g, then pitches over onto a target 3+ km out.
-        A135(18.0, 1.5, 8, 420, 10.0, 100f, 0, 8, 6f, 30, 1.925),
+        A135(18.0, 1.5, 8, 420, 10.0, 100f, 0, 8, 6f, 30, 1.925, 0.1),
         // 57E6: hot launch from the tube, the booster drops after half a second, the dart flies on.
-        PANTSIR(20.0, 3.0, 14, 170, 4.5, 40f, 0, 0, 3f, 10, 0.9);
+        PANTSIR(20.0, 3.0, 14, 170, 4.5, 40f, 0, 0, 3f, 10, 0.9, 0.2);
 
         final double maxSpeed, accel, turn, stageBack;
         final int life, cold, boost, staging;
-        final double fuse;
+        final double fuse, miss;
         final float damage, blast;
 
         Kind(double maxSpeed, double accel, double turnDeg, int life, double fuse, float damage, int cold, int boost, float blast,
-             int staging, double stageBack) {
+             int staging, double stageBack, double miss) {
             this.maxSpeed = maxSpeed;
             this.accel = accel;
             this.turn = Math.toRadians(turnDeg);
@@ -60,6 +67,7 @@ public class EntitySAM extends Entity {
             this.blast = blast;
             this.staging = staging;
             this.stageBack = stageBack;
+            this.miss = miss;
         }
 
         public double stageBack() {
@@ -69,6 +77,9 @@ public class EntitySAM extends Entity {
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Boolean> STAGED = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> BURNT = SynchedEntityData.defineId(EntitySAM.class, EntityDataSerializers.BOOLEAN);
+    /** How long a missile that lost guidance may tumble around before it is dropped. */
+    private static final int LOST_LIFE = 600;
 
     /** Client: glide between server positions like NTM missiles do, instead of snapping each packet. */
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
@@ -78,6 +89,22 @@ public class EntitySAM extends Entity {
     private Vec3 targetVel = Vec3.ZERO;
     private double speed, lastDist = Double.MAX_VALUE;
     private int receding, waiting;
+    /**
+     * A miss, rolled at launch (Kind.miss): after a few guided ticks the missile stops chasing and
+     * flies to a lead point it worked out then, offset by a few fuse radii, and bursts there.
+     */
+    private boolean miss;
+    private int guided;
+    private @Nullable Vec3 missPoint;
+    /**
+     * Lost guidance (half the misses, and every missile whose motor runs out): the body spins about an
+     * axis that wanders, the flight path bends after the nose, the motor burns on for a while and then
+     * it noses over under gravity - corkscrews, loops and wobbling dives instead of a straight drop.
+     */
+    private boolean lost;
+    private int burn;
+    private double spin;
+    private Vec3 heading = new Vec3(0, 1, 0), spinAxis = new Vec3(1, 0, 0);
     /** Game time of the last server tick: a launcher drops a missile that stopped ticking. */
     long lastTicked;
 
@@ -94,6 +121,7 @@ public class EntitySAM extends Entity {
         sam.setDeltaMovement(dir.scale(sam.speed));
         sam.face(dir);
         sam.target = target;
+        sam.miss = level.getRandom().nextDouble() < kind.miss;
         sam.lastTicked = level.getGameTime();
         level.addFreshEntity(sam);
         float pitch = switch (kind) { case TOR -> 1.3f; case BUK -> 0.9f; case A135 -> 0.6f; case PANTSIR -> 1.5f; };
@@ -108,7 +136,7 @@ public class EntitySAM extends Entity {
 
     /** Motor burning (not during the Tor's cold catapult phase). */
     public boolean motorOn() {
-        return tickCount > kind().cold;
+        return tickCount > kind().cold && !entityData.get(BURNT);
     }
 
     /** Motor section already dropped. */
@@ -126,6 +154,7 @@ public class EntitySAM extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(KIND, (byte) 0);
         builder.define(STAGED, false);
+        builder.define(BURNT, false);
     }
 
     @Override
@@ -143,10 +172,11 @@ public class EntitySAM extends Entity {
             return;
         }
         Kind k = kind();
-        if (tickCount > k.life) {
-            detonate(position());
+        if (lost && tickCount > k.life + LOST_LIFE) {
+            discard();
             return;
         }
+        if (!lost && tickCount > k.life) loseGuidance(0); // out of fuel: falls, no more self-destruct in mid-air
         lastTicked = level().getGameTime();
         ChunkUtil.holdOwnChunk(this);
         if (target != null && !target.isAlive()) target = null;
@@ -157,11 +187,24 @@ public class EntitySAM extends Entity {
         } else if (tickCount <= k.boost) {
             speed = Math.min(speed + k.accel, k.maxSpeed);  // out of the silo: straight up, full thrust
             vel = new Vec3(0, speed, 0);
+        } else if (lost) {
+            vel = tumble(vel, k);
         } else {
             Vec3 dir = vel.normalize();
             double cap = k.maxSpeed;
-            if (target != null) {
+            if (missPoint != null) {
+                dir = steer(dir, missPoint.subtract(position()).normalize(), k.turn);
+            } else if (target != null) {
                 Vec3 aim = intercept();
+                if (miss && ++guided >= 5) { // a few ticks in: the target's motion is known, the lead is plausible
+                    var r = level().getRandom();
+                    if (r.nextBoolean()) {
+                        missPoint = aim.add(randomUnit().scale(k.fuse * (2 + 2 * r.nextDouble())));
+                    } else {
+                        loseGuidance(10 + r.nextInt(40)); // this step still flies straight on, tumbling from the next
+                        aim = position().add(dir);
+                    }
+                }
                 double dist = center(target).distanceTo(position());
                 // Close in no faster than the turn rate allows (radius ~ speed / turn), but always
                 // faster than the target: a slow missile can't make the turn onto a near target.
@@ -189,7 +232,13 @@ public class EntitySAM extends Entity {
         waiting = 0;
 
         Vec3 from = position(), to = from.add(vel);
-        if (target != null) {
+        if (missPoint != null) {
+            Vec3 closest = closestOnSegment(from, to, missPoint);
+            if (closest.distanceTo(missPoint) <= k.fuse) {
+                detonate(closest);
+                return;
+            }
+        } else if (target != null) {
             Vec3 tp = center(target);
             Vec3 closest = closestOnSegment(from, to, tp);
             if (closest.distanceTo(tp) <= k.fuse) {
@@ -207,7 +256,52 @@ public class EntitySAM extends Entity {
         }
         setPos(to);
         setDeltaMovement(vel);
-        face(vel);
+        face(lost ? heading : vel);
+    }
+
+    /** Stops guiding; burnTicks of motor left. Launchers stop counting it against their salvo. */
+    private void loseGuidance(int burnTicks) {
+        var r = level().getRandom();
+        lost = true;
+        burn = burnTicks;
+        if (burn <= 0) entityData.set(BURNT, true);
+        Vec3 v = getDeltaMovement();
+        heading = v.lengthSqr() > 1e-6 ? v.normalize() : new Vec3(0, 1, 0);
+        spinAxis = randomUnit();
+        spin = Math.toRadians(3 + 12 * r.nextDouble());
+    }
+
+    private Vec3 tumble(Vec3 vel, Kind k) {
+        var r = level().getRandom();
+        target = null; // dropped here, not in loseGuidance: the guided step that called it still reads it
+        missPoint = null;
+        if (burn > 0 && --burn == 0) entityData.set(BURNT, true);
+        spinAxis = spinAxis.add(r.nextGaussian() * 0.15, r.nextGaussian() * 0.15, r.nextGaussian() * 0.15).normalize();
+        heading = rotate(heading, spinAxis, spin);
+        if (burn <= 0) {
+            spin *= 0.985;                                                   // fins slowly settle the spin
+            if (vel.lengthSqr() > 1e-6) heading = steer(heading, vel.normalize(), Math.toRadians(2)); // and weathervane it
+        }
+        double s = vel.length();
+        vel = vel.add(heading.scale(s).subtract(vel).scale(0.12));          // the path bends after the nose
+        vel = vel.scale(0.985).add(heading.scale(burn > 0 ? k.accel * 0.5 : 0)).add(0, -0.05, 0);
+        return vel.length() > k.maxSpeed ? vel.normalize().scale(k.maxSpeed) : vel;
+    }
+
+    boolean lost() {
+        return lost;
+    }
+
+    private Vec3 randomUnit() {
+        var r = level().getRandom();
+        Vec3 v = new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian());
+        return v.lengthSqr() < 1e-9 ? new Vec3(0, 1, 0) : v.normalize();
+    }
+
+    /** v turned by angle a about the unit axis k (Rodrigues). */
+    private static Vec3 rotate(Vec3 v, Vec3 k, double a) {
+        double c = Math.cos(a), sn = Math.sin(a);
+        return v.scale(c).add(k.cross(v).scale(sn)).add(k.scale(k.dot(v) * (1 - c)));
     }
 
     /**
@@ -252,8 +346,10 @@ public class EntitySAM extends Entity {
     private void detonate(Vec3 at) {
         Kind k = kind();
         ServerLevel server = (ServerLevel) level();
-        // Airburst: entity damage and the boom, no terrain damage.
-        server.explode(this, at.x, at.y, at.z, k.blast, Level.ExplosionInteraction.NONE);
+        // Airburst: entity damage and the boom, no terrain damage. Our own close-up boom (vanilla range, 64 blocks);
+        // Distant Thunder, if installed, plays sam.intercept_mid / _far further out.
+        server.explode(this, null, null, at.x, at.y, at.z, k.blast, false, Level.ExplosionInteraction.NONE,
+                ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, LevelAccessor.ntmad$blockParticles(), INTERCEPT);
         if (target != null && center(target).distanceTo(at) <= k.fuse * 1.5) {
             DamageSource src = damageSources().explosion(this, null);
             // NTM missiles have 50 health and blow up on their own when it runs out.

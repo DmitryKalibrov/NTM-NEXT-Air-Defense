@@ -52,6 +52,9 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     public int launchCell = -1;
     public long launchTime;
 
+    /** How far out from the site terrain can hide a target, see {@link #unmasked}. */
+    static final double MASK_RANGE = 96;
+
     private int cooldown;
     private final List<EntitySAM> inFlight = new ArrayList<>();
 
@@ -193,7 +196,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
             inFlight.removeIf(s -> {
                 boolean frozen = s.isAlive() && level.getGameTime() - s.lastTicked > 40;
                 if (frozen) s.discard();
-                return frozen || !s.isAlive();
+                return frozen || !s.isAlive() || s.lost();
             });
             boolean busy = inFlight.size() >= salvo();
             Entity shot = missileTarget();
@@ -232,7 +235,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     protected boolean stillValid(Entity e) {
         return e.isAlive() && e.level() == level && isAirTarget(e)
-                && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1;
+                && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1 && unmasked(getEntityPos(e));
     }
 
     protected @Nullable Entity findTarget() {
@@ -241,12 +244,32 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         double closest = reach(range());
         for (Entity e : seen()) {
             double d = getEntityPos(e).distanceTo(pos);
-            if (d < closest && d > getDetectorGrace() && isAirTarget(e)) {
+            if (d < closest && d > getDetectorGrace() && isAirTarget(e) && unmasked(getEntityPos(e))) {
                 closest = d;
                 best = e;
             }
         }
         return best;
+    }
+
+    /**
+     * Terrain masking, the real limit on a short-range SAM: hills, trees and buildings around the site
+     * hide low targets from its radar. Only the first {@link #MASK_RANGE} blocks of the line of sight
+     * are checked (further out the target is high enough above anything that matters), skipping the
+     * launcher's own blocks; unloaded chunks count as clear, so this never loads terrain.
+     */
+    protected boolean unmasked(Vec3 at) {
+        Vec3 from = getTurretPos().add(0, 1, 0);
+        Vec3 dir = at.subtract(from);
+        double len = Math.min(dir.length(), MASK_RANGE);
+        dir = dir.normalize();
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (double t = 4; t < len; t += 0.5) { // ponytail: point samples, can slip past a block's corner
+            p.set(from.x + dir.x * t, from.y + dir.y * t, from.z + dir.z * t);
+            if (!level.hasChunkAt(p)) return true;
+            if (!level.getBlockState(p).getCollisionShape(level, p).isEmpty()) return false;
+        }
+        return true;
     }
 
     /** Everything the linked radar and the own search radar see. */

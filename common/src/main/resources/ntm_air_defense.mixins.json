@@ -5,7 +5,8 @@
   "mixins": [
     "RadarLinkerMixin",
     "TurretMenuMixin",
-    "AssemblyMachineMixin"
+    "AssemblyMachineMixin",
+    "LevelAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

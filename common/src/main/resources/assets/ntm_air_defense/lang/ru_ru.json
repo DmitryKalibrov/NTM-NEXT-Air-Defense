@@ -22,5 +22,6 @@
   "gui.ntm_air_defense.missiles.players": "Ракетами по игрокам: %s",
   "gui.ntm_air_defense.missiles.animals": "Ракетами по пассивным: %s",
   "gui.ntm_air_defense.missiles.mobs": "Ракетами по мобам: %s",
-  "gui.ntm_air_defense.missiles.machines": "Ракетами по машинам: %s"
+  "gui.ntm_air_defense.missiles.machines": "Ракетами по машинам: %s",
+  "subtitles.ntm_air_defense.sam.intercept": "Ракета перехвачена"
 }

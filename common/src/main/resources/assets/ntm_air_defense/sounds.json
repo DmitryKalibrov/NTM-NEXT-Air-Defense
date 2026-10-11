@@ -1,0 +1,5 @@
+{
+  "sam.intercept_near": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_near"] },
+  "sam.intercept_mid": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_mid"] },
+  "sam.intercept_far": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_far"] }
+}

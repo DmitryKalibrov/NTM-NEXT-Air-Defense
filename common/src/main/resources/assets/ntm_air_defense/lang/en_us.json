@@ -22,5 +22,6 @@
   "gui.ntm_air_defense.missiles.players": "Missiles at players: %s",
   "gui.ntm_air_defense.missiles.animals": "Missiles at passive mobs: %s",
   "gui.ntm_air_defense.missiles.mobs": "Missiles at hostile mobs: %s",
-  "gui.ntm_air_defense.missiles.machines": "Missiles at machines: %s"
+  "gui.ntm_air_defense.missiles.machines": "Missiles at machines: %s",
+  "subtitles.ntm_air_defense.sam.intercept": "Missile intercepted"
 }
