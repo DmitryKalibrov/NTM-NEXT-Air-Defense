@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ntm_air_defense:block/console"
+      }
+    }
+  ]
+}

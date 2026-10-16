@@ -1,5 +1,6 @@
 package com.hbm.airdefense;
 
+import com.hbm.airdefense.client.ParticleSmoke;
 import com.hbm.api.environment.Environment;
 import com.hbm.client.ClientEffects;
 import com.hbm.particle.RocketFlameColor;
@@ -22,8 +23,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A burnt-out motor section (53T6 motor, 57E6 booster): tumbles down on a ballistic arc trailing smoke that cools from
- * the motor's glow to thin grey, and blows up (residual propellant) where it lands.
+ * A burnt-out motor section (53T6 motor, 57E6 booster): tumbles down on a ballistic arc, a moment of orange glow and
+ * then dark smoke puffs, and blows up (residual propellant) where it lands.
  */
 public class EntitySpentStage extends Entity {
 
@@ -92,21 +93,31 @@ public class EntitySpentStage extends Entity {
         setDeltaMovement(vel);
     }
 
-    /** Glowing exhaust right after burnout, cooling to grey smoke that thins out and stops. */
+    /**
+     * A short glow right after burnout, then only sparse dark smoke puffs: clearly a dead tumbling
+     * casing, not the bright continuous plume of a missile still under power.
+     */
     private void trail(Vec3 step) {
-        if (tickCount > TRAIL) return;
-        float heat = Mth.clamp(1f - tickCount / (float) HOT, 0f, 1f);
-        float grey = 0.45f;
-        RocketFlameColor color = new RocketFlameColor(Mth.lerp(heat, grey, 1f), Mth.lerp(heat, grey, 0.6f),
-                Mth.lerp(heat, grey, 0f), heat > 0, heat > 0, heat > 0, 240);
-        float scale = (small() ? 0.4f : 0.9f) * (1f - tickCount / (float) TRAIL) + 0.1f;
+        int hot = small() ? 4 : HOT;
+        if (tickCount > (small() ? TRAIL / 2 : TRAIL)) return;
+        if (tickCount > hot) {
+            // dark residue smoke, thinning out as the casing cools
+            var r = getRandom();
+            float s = small() ? 0.3f : 0.7f, fade = 1f - (float) tickCount / (small() ? TRAIL / 2 : TRAIL);
+            ParticleSmoke.spawn(level(), getX(), getY(), getZ(), r.nextGaussian() * 0.02, 0.02, r.nextGaussian() * 0.02,
+                    s, s * (4f + r.nextFloat() * 2f), 120 + r.nextInt(80), 0, 0.35f + r.nextFloat() * 0.1f, 0.25f + 0.45f * fade);
+            return;
+        }
+        float heat = 1f - tickCount / (float) hot;
+        RocketFlameColor color = new RocketFlameColor(1f, Mth.lerp(heat, 0.35f, 0.6f), 0f, true, true, true, 240);
+        float scale = (small() ? 0.3f : 0.8f) * heat + 0.1f;
         double pressure = Environment.particlePressure(level());
         double len = step.length();
         int count = (int) Mth.clamp(len, 1, 8);
         for (int i = 0; i < count; i++) {
             Vec3 p = position().subtract(step.scale(i / (double) count));
             ClientEffects.spawnRocketFlameInAir(level(), p.x, p.y, p.z, scale, 0, 0, 0,
-                    60 + getRandom().nextInt(30), pressure, color);
+                    20 + getRandom().nextInt(10), pressure, color);
         }
     }
 

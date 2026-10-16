@@ -1,0 +1,30 @@
+{
+  "fabric:type": "hbm:obj",
+  "loader": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "hidden": [
+    "BukMissile",
+    "Carriage",
+    "Launcher",
+    "Missile1",
+    "Missile2",
+    "Missile3",
+    "Missile4",
+    "Radar",
+    "RamCylinder",
+    "RamRod"
+  ],
+  "model": "ntm_air_defense:models/obj/buk.obj",
+  "offset_x": 0.5,
+  "offset_z": -0.5,
+  "skins": {
+    "all": [
+      "Base"
+    ]
+  },
+  "textures": {
+    "all": "ntm_air_defense:block/buk_winter",
+    "particle": "ntm_air_defense:block/buk_winter"
+  }
+}

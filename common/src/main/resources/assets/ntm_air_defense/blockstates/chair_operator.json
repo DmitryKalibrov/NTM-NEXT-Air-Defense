@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ntm_air_defense:block/chair_operator"
+    },
+    "facing=east": {
+      "model": "ntm_air_defense:block/chair_operator",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "ntm_air_defense:block/chair_operator",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ntm_air_defense:block/chair_operator",
+      "y": 270
+    }
+  }
+}

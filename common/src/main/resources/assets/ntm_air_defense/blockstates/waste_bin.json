@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ntm_air_defense:block/waste_bin"
+    },
+    "facing=east": {
+      "model": "ntm_air_defense:block/waste_bin",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "ntm_air_defense:block/waste_bin",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ntm_air_defense:block/waste_bin",
+      "y": 270
+    }
+  }
+}

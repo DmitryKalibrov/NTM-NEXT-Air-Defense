@@ -1,0 +1,19 @@
+{
+  "fabric:type": "hbm:obj",
+  "loader": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "hidden": [
+    "Antenna"
+  ],
+  "model": "ntm_air_defense:models/obj/radar_nebo.obj",
+  "skins": {
+    "all": [
+      "Base"
+    ]
+  },
+  "textures": {
+    "all": "ntm_air_defense:block/radar_nebo_winter",
+    "particle": "ntm_air_defense:block/radar_nebo_winter"
+  }
+}

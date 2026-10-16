@@ -24,7 +24,7 @@ public class BlockEntityBuk extends BlockEntitySAMBase {
 
     @Override protected int capacity() { return 4; }
     @Override protected Item ammoItem() { return AirDefense.SAM_BUK.get(); }
-    @Override protected double range() { return 1500; }
+    @Override protected double range() { return 1250; }
     @Override protected double ownRadarRange() { return 0; }
     @Override public double getHeightOffset() { return 3.0; }
     @Override public double getTurretYawSpeed() { return 6.0; }

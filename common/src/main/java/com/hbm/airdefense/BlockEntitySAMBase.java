@@ -41,6 +41,12 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery {
 
+    /** The name from the field above its window ({@link DeviceName}). */
+    @Override
+    public void receiveControl(net.minecraft.nbt.CompoundTag data) {
+        if (!DeviceName.receive(this, data)) super.receiveControl(data);
+    }
+
     private static final long U_AMMO = 1L << 11, U_RADAR = 1L << 12, U_CELL = 1L << 13, U_TIME = 1L << 14;
 
     public @Nullable BlockPos radarPos;
@@ -56,6 +62,10 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     static final double MASK_RANGE = 96;
 
     private int cooldown;
+    /** Manual mode (from a console): engage only the target designated on the radar, fire only on order. */
+    public boolean manual;
+    private @Nullable Entity designated;
+    private int fireOrders;
     private final List<EntitySAM> inFlight = new ArrayList<>();
 
     protected BlockEntitySAMBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -158,6 +168,11 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         return new MenuTurretBase(containerId, playerInventory, this);
     }
 
+    /** Missiles of this launcher still flying (for the console monitors). */
+    public int inFlightCount() {
+        return inFlight.size();
+    }
+
     public void linkRadar(BlockPos pos) {
         radarPos = pos;
         markChanged();
@@ -179,14 +194,16 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         boolean active = isOn() && hasPower();
         if (active) setPower(getPower() - getConsumption());
 
+        if (manual && target != null && target != designated) target = null;  // the operator moved the designation
         if (target != null && (!active || !stillValid(target))) {
             if (!target.isAlive()) hbm$syncSet$BlockEntityTurretBaseNT$stattrak(stattrak + 1);
             target = null;
         }
         if (active && target == null && --searchTimer <= 0) {
             searchTimer = getDetectorInterval();
-            target = findTarget();
+            target = acquire();
         }
+        if (target == null && designated == null) fireOrders = 0;
         hbm$syncSet$BlockEntityTurretBaseNT$tPos(target != null ? getEntityPos(target) : null);
 
         if (cooldown > 0) cooldown--;
@@ -200,12 +217,17 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
             });
             boolean busy = inFlight.size() >= salvo();
             Entity shot = missileTarget();
-            if (shot != null && canLaunch() && readyToFire() && ammo > 0 && cooldown <= 0 && !busy) {
+            // one missile per target across all launchers: the next goes only once that one is gone
+            // manual: the operator decides, a second launcher may go at a target that already has a missile
+            if (shot != null && (manual || !EntitySAM.engaged(shot)) && canLaunch() && readyToFire() && ammo > 0 && cooldown <= 0 && !busy
+                    && (!manual || fireOrders > 0)) {
+                if (manual) fireOrders--;
                 EntitySAM sam = launch(shot, capacity() - ammo);
                 removeItem(SLOT_AMMO_FIRST, 1);
                 setAmmo(ammo - 1);
                 cooldown = cooldownTicks();
-                if (sam != null) inFlight.add(sam);
+                SamLog.add(level, worldPosition, getTurretPos(), SamLog.LAUNCH, shot.getId());
+                if (sam != null) launched(sam);
             }
         } else {
             stow();
@@ -214,6 +236,66 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
         hbm$syncSet$BlockEntityTurretBaseNT$power(power + ItemEnergyTransfer.extract((Container) this, SLOT_BATTERY, getMaxPower() - power, false));
         if (power != prevPower) markChanged();
         networkPackNT(250);
+    }
+
+    /** A new target: the launcher's own pick, or in manual mode the designated one while it is engageable. */
+    protected @Nullable Entity acquire() {
+        if (!manual) return findTarget();
+        return designated != null && operatorTarget(designated) ? designated : null;
+    }
+
+    /**
+     * What the operator designated: the target-type toggles don't apply (the operator decides), only that it is
+     * there, not friendly, not our own missile, in reach and not hidden by terrain.
+     */
+    protected boolean operatorTarget(Entity e) {
+        return e.isAlive() && e.level() == level && !(e instanceof EntitySAM) && !AirDefenseTeams.friendly(level, worldPosition, e)
+                && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1 && unmasked(getEntityPos(e));
+    }
+
+    /** A console control assigned to this launcher moved, see {@link ConsoleFunctions}. */
+    /** A console control moved; for a launch order, why it can't be carried out (a lang key suffix), else null. */
+    public @Nullable String command(String fn, int value) {
+        String refused = null;
+        switch (fn) {
+            case "power" -> hbm$syncSet$BlockEntityTurretBaseNT$isOn(value != 0);
+            case "manual" -> manual = value != 0;
+            case "mode" -> {  // off / auto / manual
+                hbm$syncSet$BlockEntityTurretBaseNT$isOn(value > 0);
+                manual = value >= 2;
+            }
+            case "fire" -> {
+                if (!isOn()) refused = "off";
+                else if (!hasPower()) refused = "power";
+                else if (!manual) refused = "auto";
+                else if (designated == null) refused = "no_target";
+                else if (!operatorTarget(designated)) refused = "out_of_reach";
+                else if (ammo <= 0) refused = "ammo";
+                else fireOrders = Math.min(fireOrders + 1, salvo());
+            }
+            case "f_players" -> hbm$syncSet$BlockEntityTurretBaseNT$targetPlayers(value != 0);
+            case "f_animals" -> hbm$syncSet$BlockEntityTurretBaseNT$targetAnimals(value != 0);
+            case "f_mobs" -> hbm$syncSet$BlockEntityTurretBaseNT$targetMobs(value != 0);
+            case "f_machines" -> hbm$syncSet$BlockEntityTurretBaseNT$targetMachines(value != 0);
+            case "drop" -> {
+                designated = null;
+                target = null;
+            }
+            default -> {}
+        }
+        markChanged();
+        return refused;
+    }
+
+    /** Target filter bits for the consoles: players 1, animals 2, mobs 4, machines 8 (Pantsir: missiles << 4). */
+    public int filterBits() {
+        return (targetPlayers ? 1 : 0) | (targetAnimals ? 2 : 0) | (targetMobs ? 4 : 0) | (targetMachines ? 8 : 0);
+    }
+
+    /** The target picked on a console's radar screen (null = none). */
+    public void designate(@Nullable Entity e) {
+        designated = e;
+        searchTimer = 0;  // take it up on the next tick
     }
 
     /** What the missiles go at; the aimed target unless a launcher picks its own. */
@@ -228,12 +310,27 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     /** Hand a delayed missile over once it is spawned. */
     protected void launched(EntitySAM sam) {
+        sam.launcher = worldPosition;
         inFlight.add(sam);
+    }
+
+    /** The last hit's TV picture: missile and target positions per tick, relative to the burst, in 1/8 blocks. */
+    public List<Integer> clip = List.of();
+    public long clipTime;
+
+    void clip(List<double[]> track, Vec3 at) {
+        List<Integer> out = new ArrayList<>();
+        for (double[] t : track) {
+            for (int k = 0; k < 6; k++) out.add((int) Math.round((t[k] - (k % 3 == 0 ? at.x : k % 3 == 1 ? at.y : at.z)) * 8));
+        }
+        clip = out;
+        clipTime = level.getGameTime();
     }
 
     // ---- targeting ----
 
     protected boolean stillValid(Entity e) {
+        if (manual && e == designated) return operatorTarget(e);
         return e.isAlive() && e.level() == level && isAirTarget(e)
                 && getEntityPos(e).distanceTo(getTurretPos()) <= reach(range()) * 1.1 && unmasked(getEntityPos(e));
     }
@@ -241,12 +338,16 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     protected @Nullable Entity findTarget() {
         Vec3 pos = getTurretPos();
         Entity best = null;
-        double closest = reach(range());
+        double max = reach(range()), bestScore = Double.MAX_VALUE;
         for (Entity e : seen()) {
             double d = getEntityPos(e).distanceTo(pos);
-            if (d < closest && d > getDetectorGrace() && isAirTarget(e) && unmasked(getEntityPos(e))) {
-                closest = d;
-                best = e;
+            if (d < max && d > getDetectorGrace() && isAirTarget(e) && unmasked(getEntityPos(e))) {
+                // closest first, but one nobody is shooting at yet before one that already has a missile on it
+                double score = EntitySAM.engaged(e) ? d + max : d;
+                if (score < bestScore) {
+                    bestScore = score;
+                    best = e;
+                }
             }
         }
         return best;
@@ -297,7 +398,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
      * any flight phase: NTM turrets wait for the descent, by then a SAM is too late.
      */
     protected boolean isAirTarget(Entity e) {
-        if (e instanceof EntitySAM || !e.isAlive()) return false;
+        if (e instanceof EntitySAM || !e.isAlive() || AirDefenseTeams.friendly(level, worldPosition, e)) return false;
         if (e instanceof EntityMissileBaseNT) {
             return targetMachines && !(e instanceof IRadarDetectableNT d && !d.canBeSeenBy(this));
         }
@@ -331,7 +432,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
 
     @Override
     public long syncUnitMask() {
-        return super.syncUnitMask() | U_AMMO | U_RADAR | U_CELL | U_TIME;
+        return super.syncUnitMask() | U_AMMO | U_RADAR | U_CELL | U_TIME | DeviceName.BIT;
     }
 
     @Override
@@ -341,6 +442,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
             case 12 -> out.writeFloat(radar);
             case 13 -> out.writeByte(launchCell);
             case 14 -> out.writeLong(launchTime);
+            case DeviceName.UNIT -> DeviceName.write(this, out);
             default -> super.writeSyncUnit(unit, out);
         }
     }
@@ -352,6 +454,7 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
             case 12 -> radar = in.readFloat();
             case 13 -> launchCell = in.readByte();
             case 14 -> launchTime = in.readLong();
+            case DeviceName.UNIT -> DeviceName.read(this, in);
             default -> super.readSyncUnit(unit, in);
         }
     }
@@ -360,12 +463,14 @@ public abstract class BlockEntitySAMBase extends BlockEntityTurretBaseArtillery 
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         radarPos = input.getLong("radarPos").map(BlockPos::of).orElse(null);
+        manual = input.getBooleanOr("manual", false);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         if (radarPos != null) output.putLong("radarPos", radarPos.asLong());
+        output.putBoolean("manual", manual);
     }
 
     @Override

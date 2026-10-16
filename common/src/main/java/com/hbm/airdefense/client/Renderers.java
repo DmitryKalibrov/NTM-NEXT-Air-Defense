@@ -30,9 +30,14 @@ public final class Renderers {
         sink.blockEntity(AirDefense.PANTSIR_BE.get(), ctx -> new RenderPantsir());
         sink.blockEntity(AirDefense.ASSEMBLER_BE.get(), ctx -> new RenderDefenseAssembler());
         sink.blockEntity(AirDefense.NEBO_BE.get(), ctx -> new RenderNebo());
+        sink.blockEntity(AirDefense.CONSOLE_BE.get(), ctx -> new RenderConsole());
+        sink.blockEntity(AirDefense.EOS_BE.get(), ctx -> new RenderEos());
         sink.entity(AirDefense.SAM.get(), RenderSAM::new);
         sink.entity(AirDefense.SPENT_STAGE.get(), RenderSpentStage::new);
+        sink.entity(AirDefense.SAM_WRECK.get(), RenderSAMWreck::new);
+        sink.entity(AirDefense.DEBUG_EMITTER.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         sink.entity(AirDefense.TRACER.get(), RenderTracer::new);
+        sink.entity(AirDefense.BURST.get(), RenderBurst::new);
         sink.entity(AirDefense.TARGET_DRONE.get(),
                 ctx -> new RenderMissile(ctx, ResourceManager.missileV2, ResourceManager.missileV2_decoy_tex, 1.0f));
     }

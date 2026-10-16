@@ -17,14 +17,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import org.joml.Matrix4d;
 import org.jspecify.annotations.Nullable;
 
@@ -39,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockEntityPantsir extends BlockEntitySAMBase {
 
-    static final double GUN_RANGE = 150, MISSILE_MIN = 30, MISSILE_MIN_HEIGHT = 15;
+    static final double GUN_RANGE = 300, MISSILE_RANGE = 750, MISSILE_MIN = 30, MISSILE_MIN_HEIGHT = 15;
     /** Rough gun output against an NTM missile (50 health): two guns, ~half the rounds hit. */
     static final double GUN_TICKS_TO_KILL = 40;
     static final int BELT = 200;
@@ -72,10 +69,10 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
 
     @Override protected int capacity() { return 12; }
     @Override protected Item ammoItem() { return AirDefense.SAM_PANTSIR.get(); }
-    @Override protected double range() { return 900; }
-    @Override protected double ownRadarRange() { return 900; }
+    /** Missiles are the long arm; the guns finish off what gets inside {@link #GUN_RANGE}. */
+    @Override protected double range() { return MISSILE_RANGE; }
+    @Override protected double ownRadarRange() { return MISSILE_RANGE; }
     @Override protected int cooldownTicks() { return 8; }
-    @Override protected int salvo() { return 2; }
     @Override public double getHeightOffset() { return 1.65; }
     @Override public double getTurretYawSpeed() { return 10.0; }
     @Override public double getTurretPitchSpeed() { return 8.0; }
@@ -136,13 +133,6 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
         return tPos == null ? Double.MAX_VALUE : tPos.distanceTo(getTurretPos());
     }
 
-    /** Nothing solid between the launcher (above its own cells) and the target. */
-    private boolean inSight(Vec3 at) {
-        Vec3 from = Vec3.atCenterOf(worldPosition).add(0, 2.5, 0);
-        return level.clip(new ClipContext(from, at, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()))
-                .getType() == HitResult.Type.MISS;
-    }
-
     /** Height of the target above the terrain under it. */
     private double heightAboveGround(Vec3 at) {
         return at.y - level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(at.x), Mth.floor(at.z));
@@ -197,17 +187,27 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
             Vec3 at = getEntityPos(e);
             double d = at.distanceTo(pos);
             if (d <= getDetectorGrace()) continue;
-            if (d < gunBest && gunOk(e) && inSight(at)) {
+            if (d < gunBest && gunOk(e) && unmasked(at)) {
                 gunBest = d;
                 gun = e;
             }
-            if (d < missileBest && wantMissile(e)) {
-                missileBest = d;
+            double score = EntitySAM.engaged(e) ? d + 10_000 : d; // spread missiles over targets
+            if (score < missileBest && wantMissile(e)) {
+                missileBest = score;
                 missile = e;
             }
         }
         missileTarget = missile;
         return gun != null ? gun : missile;
+    }
+
+    /** Manual: guns and missiles both take the designated target. */
+    @Override
+    protected @Nullable Entity acquire() {
+        if (!manual) return findTarget();
+        Entity d = super.acquire();
+        missileTarget = d;  // the operator's pick, whatever the missile toggles say
+        return d;
     }
 
     @Override
@@ -225,6 +225,27 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
     @Override
     protected boolean readyToFire() {
         return radar >= 1f;
+    }
+
+    @Override
+    public @Nullable String command(String fn, int value) {
+        int bit = switch (fn) {
+            case "m_players" -> 1;
+            case "m_animals" -> 2;
+            case "m_mobs" -> 4;
+            case "m_machines" -> 8;
+            default -> 0;
+        };
+        if (bit == 0) return super.command(fn, value);
+        missileFilter = value != 0 ? missileFilter | bit : missileFilter & ~bit;
+        syncUnitsChanged(3, U_FILTER);
+        markChanged();
+        return null;
+    }
+
+    @Override
+    public int filterBits() {
+        return super.filterBits() | missileFilter << 4;
     }
 
     @Override
@@ -256,13 +277,13 @@ public class BlockEntityPantsir extends BlockEntitySAMBase {
                 markChanged();
             }
         }
-        if (missileTarget != null && !wantMissile(missileTarget)) missileTarget = null;
+        if (!manual && missileTarget != null && !wantMissile(missileTarget)) missileTarget = null;
         // look again now and then: a gun target turning up takes the turret over from a missile one
-        if (isOn() && hasPower() && level.getGameTime() % 10 == 0) target = findTarget();
+        if (isOn() && hasPower() && level.getGameTime() % 10 == 0) target = acquire();
         super.tickServer();
 
         double d = targetDist();
-        clearSight = tPos != null && inSight(tPos);
+        clearSight = tPos != null && unmasked(tPos);
         if (target != null && aligned && clearSight && rounds > 0 && d <= GUN_RANGE && gunOk(target)) fireGuns(d);
     }
 

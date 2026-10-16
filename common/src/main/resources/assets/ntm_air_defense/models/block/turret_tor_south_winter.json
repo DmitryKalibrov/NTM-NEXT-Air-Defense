@@ -1,0 +1,32 @@
+{
+  "fabric:type": "hbm:obj",
+  "loader": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "hidden": [
+    "Turret",
+    "SearchRadar",
+    "TrackRadar",
+    "TorMissile",
+    "Hatch1",
+    "Hatch2",
+    "Hatch3",
+    "Hatch4",
+    "Hatch5",
+    "Hatch6",
+    "Hatch7",
+    "Hatch8"
+  ],
+  "model": "ntm_air_defense:models/obj/tor.obj",
+  "offset_x": -0.5,
+  "offset_z": -0.5,
+  "skins": {
+    "all": [
+      "TBase"
+    ]
+  },
+  "textures": {
+    "all": "ntm_air_defense:block/tor_winter",
+    "particle": "ntm_air_defense:block/tor_winter"
+  }
+}

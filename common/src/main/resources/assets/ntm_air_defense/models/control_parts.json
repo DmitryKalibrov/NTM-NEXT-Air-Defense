@@ -1,0 +1,737 @@
+{
+ "annunciator": {
+  "mount": "any",
+  "parts": {
+   "lens": {}
+  },
+  "size": [
+   4,
+   2
+  ]
+ },
+ "annunciator_bank": {
+  "mount": "any",
+  "parts": {
+   "lens0": {},
+   "lens1": {},
+   "lens10": {},
+   "lens11": {},
+   "lens2": {},
+   "lens3": {},
+   "lens4": {},
+   "lens5": {},
+   "lens6": {},
+   "lens7": {},
+   "lens8": {},
+   "lens9": {}
+  },
+  "size": [
+   8,
+   4
+  ]
+ },
+ "ashtray": {
+  "mount": "top",
+  "parts": {},
+  "size": [
+   3,
+   3
+  ]
+ },
+ "btn_guarded": {
+  "mount": "any",
+  "parts": {
+   "cap": {}
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "btn_lit": {
+  "mount": "any",
+  "parts": {
+   "cap": {}
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "btn_mushroom": {
+  "mount": "any",
+  "parts": {
+   "cap": {}
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "btn_pair": {
+  "mount": "any",
+  "parts": {
+   "cap_a": {},
+   "cap_b": {}
+  },
+  "size": [
+   2,
+   4
+  ]
+ },
+ "btn_round": {
+  "mount": "any",
+  "parts": {
+   "cap": {}
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "btn_square": {
+  "mount": "any",
+  "parts": {
+   "cap": {}
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "calendar": {
+  "mount": "top",
+  "parts": {
+   "page": {}
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "carafe": {
+  "mount": "top",
+  "parts": {},
+  "size": [
+   4,
+   3
+  ]
+ },
+ "clock": {
+  "mount": "any",
+  "parts": {
+   "hour": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.04125
+    ]
+   },
+   "minute": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.04125
+    ]
+   }
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "control_key": {
+  "mount": "any",
+  "parts": {
+   "handle": {
+    "pivot": [
+     0.09375,
+     0.09375,
+     0.0
+    ]
+   },
+   "handle_tint": {
+    "pivot": [
+     0.09375,
+     0.09375,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "counter": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   4,
+   2
+  ]
+ },
+ "crt_bank": {
+  "mount": "any",
+  "parts": {
+   "screen0": {},
+   "screen1": {},
+   "screen2": {},
+   "screen3": {}
+  },
+  "size": [
+   12,
+   10
+  ]
+ },
+ "crt_ppi": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   12,
+   12
+  ]
+ },
+ "crt_ppi_desk": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   8,
+   8
+  ]
+ },
+ "crt_small": {
+  "mount": "any",
+  "parts": {
+   "screen": {}
+  },
+  "size": [
+   6,
+   5
+  ]
+ },
+ "crt_tall": {
+  "mount": "any",
+  "parts": {
+   "screen": {}
+  },
+  "size": [
+   5,
+   7
+  ]
+ },
+ "desk_lamp": {
+  "mount": "top",
+  "parts": {
+   "bulb": {},
+   "switch": {}
+  },
+  "size": [
+   4,
+   5
+  ]
+ },
+ "desk_phone": {
+  "mount": "top",
+  "parts": {
+   "dial": {},
+   "handset": {}
+  },
+  "size": [
+   6,
+   6
+  ]
+ },
+ "display_digits": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   6,
+   2
+  ]
+ },
+ "folders": {
+  "mount": "top",
+  "parts": {},
+  "size": [
+   7,
+   8
+  ]
+ },
+ "fuse_holder": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   1,
+   2
+  ]
+ },
+ "galette_switch": {
+  "mount": "any",
+  "parts": {
+   "knob": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.0
+    ]
+   },
+   "knob_tint": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "gauge_edgewise": {
+  "mount": "any",
+  "parts": {
+   "pointer": {}
+  },
+  "size": [
+   2,
+   6
+  ]
+ },
+ "gauge_round": {
+  "mount": "any",
+  "parts": {
+   "needle": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.05375
+    ]
+   }
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "gauge_square": {
+  "mount": "any",
+  "parts": {
+   "needle": {
+    "pivot": [
+     0.125,
+     0.0625,
+     0.04125
+    ]
+   }
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "handset": {
+  "mount": "any",
+  "parts": {
+   "handset": {}
+  },
+  "size": [
+   3,
+   8
+  ]
+ },
+ "jack_panel": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   4,
+   2
+  ]
+ },
+ "joystick": {
+  "mount": "any",
+  "parts": {
+   "stick": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.05625
+    ]
+   },
+   "stick_tint": {
+    "pivot": [
+     0.125,
+     0.125,
+     0.05625
+    ]
+   }
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "key_strip": {
+  "mount": "any",
+  "parts": {
+   "key0": {},
+   "key1": {},
+   "key2": {},
+   "key3": {},
+   "key4": {},
+   "key5": {}
+  },
+  "size": [
+   8,
+   2
+  ]
+ },
+ "key_switch": {
+  "mount": "any",
+  "parts": {
+   "key": {
+    "pivot": [
+     0.09375,
+     0.09375,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "keypad": {
+  "mount": "any",
+  "parts": {
+   "key0": {},
+   "key1": {},
+   "key10": {},
+   "key11": {},
+   "key2": {},
+   "key3": {},
+   "key4": {},
+   "key5": {},
+   "key6": {},
+   "key7": {},
+   "key8": {},
+   "key9": {}
+  },
+  "size": [
+   4,
+   5
+  ]
+ },
+ "knob_pointer": {
+  "mount": "any",
+  "parts": {
+   "knob": {
+    "pivot": [
+     0.09375,
+     0.09375,
+     0.0
+    ]
+   },
+   "knob_tint": {
+    "pivot": [
+     0.09375,
+     0.09375,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   3,
+   3
+  ]
+ },
+ "knob_small": {
+  "mount": "any",
+  "parts": {
+   "knob": {
+    "pivot": [
+     0.0625,
+     0.0625,
+     0.0
+    ]
+   },
+   "knob_tint": {
+    "pivot": [
+     0.0625,
+     0.0625,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "label_large": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   8,
+   2
+  ]
+ },
+ "label_small": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   4,
+   1
+  ]
+ },
+ "lamp_round": {
+  "mount": "any",
+  "parts": {
+   "lens": {}
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "lamp_square": {
+  "mount": "any",
+  "parts": {
+   "lens": {}
+  },
+  "size": [
+   2,
+   2
+  ]
+ },
+ "lit_matrix": {
+  "mount": "any",
+  "parts": {
+   "key0": {},
+   "key1": {},
+   "key10": {},
+   "key11": {},
+   "key12": {},
+   "key13": {},
+   "key14": {},
+   "key15": {},
+   "key2": {},
+   "key3": {},
+   "key4": {},
+   "key5": {},
+   "key6": {},
+   "key7": {},
+   "key8": {},
+   "key9": {}
+  },
+  "size": [
+   6,
+   6
+  ]
+ },
+ "microphone": {
+  "mount": "any",
+  "parts": {},
+  "size": [
+   2,
+   2
+  ]
+ },
+ "portrait": {
+  "mount": "top",
+  "parts": {
+   "pic0": {},
+   "pic1": {},
+   "pic2": {},
+   "pic3": {},
+   "pic4": {},
+   "stand": {}
+  },
+  "size": [
+   5,
+   3
+  ]
+ },
+ "readiness": {
+  "mount": "any",
+  "parts": {
+   "lens0": {},
+   "lens1": {},
+   "lens2": {},
+   "lens3": {},
+   "lens4": {}
+  },
+  "size": [
+   4,
+   10
+  ]
+ },
+ "recorder": {
+  "mount": "any",
+  "parts": {
+   "pen": {}
+  },
+  "size": [
+   5,
+   5
+  ]
+ },
+ "rocker": {
+  "mount": "any",
+  "parts": {
+   "rocker": {
+    "pivot": [
+     0.0625,
+     0.09375,
+     0.025
+    ]
+   },
+   "rocker_tint": {
+    "pivot": [
+     0.0625,
+     0.09375,
+     0.025
+    ]
+   }
+  },
+  "size": [
+   2,
+   3
+  ]
+ },
+ "seismograph": {
+  "mount": "any",
+  "parts": {
+   "lens": {},
+   "paper": {},
+   "pen": {
+    "pivot": [
+     0.4125,
+     0.2625,
+     0.096875
+    ]
+   },
+   "pointer": {}
+  },
+  "size": [
+   8,
+   8
+  ]
+ },
+ "slider": {
+  "mount": "any",
+  "parts": {
+   "knob": {}
+  },
+  "size": [
+   2,
+   5
+  ]
+ },
+ "speaker": {
+  "mount": "any",
+  "parts": {
+   "knob": {
+    "pivot": [
+     0.25,
+     0.09375,
+     0.0
+    ]
+   },
+   "knob_tint": {
+    "pivot": [
+     0.25,
+     0.09375,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   5,
+   3
+  ]
+ },
+ "tea_glass": {
+  "mount": "top",
+  "parts": {},
+  "size": [
+   2,
+   2
+  ]
+ },
+ "toggle": {
+  "mount": "any",
+  "parts": {
+   "lever": {
+    "pivot": [
+     0.0625,
+     0.09375,
+     0.04375
+    ]
+   },
+   "lever_tint": {
+    "pivot": [
+     0.0625,
+     0.09375,
+     0.04375
+    ]
+   }
+  },
+  "size": [
+   2,
+   3
+  ]
+ },
+ "toggle_covered": {
+  "mount": "any",
+  "parts": {
+   "cover": {
+    "pivot": [
+     0.09375,
+     0.2,
+     0.034375
+    ]
+   },
+   "lever": {
+    "pivot": [
+     0.09375,
+     0.10625,
+     0.034375
+    ]
+   },
+   "lever_tint": {
+    "pivot": [
+     0.09375,
+     0.10625,
+     0.034375
+    ]
+   }
+  },
+  "size": [
+   3,
+   4
+  ]
+ },
+ "trackball": {
+  "mount": "any",
+  "parts": {
+   "ball": {}
+  },
+  "size": [
+   4,
+   4
+  ]
+ },
+ "tv_screen": {
+  "mount": "any",
+  "parts": {
+   "screen": {}
+  },
+  "size": [
+   8,
+   6
+  ]
+ }
+}

@@ -1,16 +1,13 @@
 {
   "variants": {
-    "facing=east": {
+    "camo=green": {
       "model": "ntm_air_defense:block/radar_nebo"
     },
-    "facing=north": {
-      "model": "ntm_air_defense:block/radar_nebo"
+    "camo=desert": {
+      "model": "ntm_air_defense:block/radar_nebo_desert"
     },
-    "facing=south": {
-      "model": "ntm_air_defense:block/radar_nebo"
-    },
-    "facing=west": {
-      "model": "ntm_air_defense:block/radar_nebo"
+    "camo=winter": {
+      "model": "ntm_air_defense:block/radar_nebo_winter"
     }
   }
 }

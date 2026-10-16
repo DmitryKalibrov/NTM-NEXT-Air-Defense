@@ -5,6 +5,8 @@ import com.hbm.capability.MachineCaps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Nebo early-warning radar: NTM's large radar as a 5x5 site (pad, shelter, lattice mast) with a turning Yagi array, same GUI, linker and power hookup. */
@@ -14,6 +16,13 @@ public class RadarNebo extends MachineRadarLarge {
 
     public RadarNebo(BlockBehaviour.Properties props) {
         super(props);
+        registerDefaultState(defaultBlockState().setValue(Camo.CAMO, Camo.GREEN).setValue(Camo.NET, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(Camo.CAMO, Camo.NET);
     }
 
     @Override

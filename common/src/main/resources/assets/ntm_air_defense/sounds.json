@@ -1,5 +1,148 @@
 {
-  "sam.intercept_near": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_near"] },
-  "sam.intercept_mid": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_mid"] },
-  "sam.intercept_far": { "subtitle": "subtitles.ntm_air_defense.sam.intercept", "sounds": ["ntm_air_defense:sam/intercept_far"] }
+  "sam.intercept_near": {
+    "subtitle": "subtitles.ntm_air_defense.sam.intercept",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:sam/intercept_near",
+        "pitch": 1.3
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_near",
+        "pitch": 1.43
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_near",
+        "pitch": 1.56
+      }
+    ]
+  },
+  "sam.intercept_mid": {
+    "subtitle": "subtitles.ntm_air_defense.sam.intercept",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:sam/intercept_mid",
+        "pitch": 0.88
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_mid",
+        "pitch": 0.94
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_mid",
+        "pitch": 1.0
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_mid",
+        "pitch": 1.06
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_mid",
+        "pitch": 1.12
+      }
+    ]
+  },
+  "sam.intercept_far": {
+    "subtitle": "subtitles.ntm_air_defense.sam.intercept",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:sam/intercept_far",
+        "pitch": 0.88
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_far",
+        "pitch": 0.94
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_far",
+        "pitch": 1.0
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_far",
+        "pitch": 1.06
+      },
+      {
+        "name": "ntm_air_defense:sam/intercept_far",
+        "pitch": 1.12
+      }
+    ]
+  },
+  "tor.hatch": {
+    "subtitle": "subtitles.ntm_air_defense.tor.hatch",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/hatch"
+      }
+    ]
+  },
+  "tor.eject": {
+    "subtitle": "subtitles.ntm_air_defense.tor.eject",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/eject"
+      }
+    ]
+  },
+  "tor.ignition": {
+    "subtitle": "subtitles.ntm_air_defense.sam.ignition",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/ignition"
+      }
+    ]
+  },
+  "tor.flight": {
+    "subtitle": "subtitles.ntm_air_defense.sam.flight",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/flight_1"
+      },
+      {
+        "name": "ntm_air_defense:tor/flight_2"
+      },
+      {
+        "name": "ntm_air_defense:tor/flight_3"
+      }
+    ]
+  },
+  "tor.power": {
+    "subtitle": "subtitles.ntm_air_defense.tor.power",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/power_loop",
+        "volume": 0.06
+      }
+    ]
+  },
+  "tor.radar": {
+    "subtitle": "subtitles.ntm_air_defense.tor.radar",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:tor/radar_loop",
+        "volume": 0.06
+      }
+    ]
+  },
+  "sam.explosion_small": {
+    "subtitle": "subtitles.ntm_air_defense.sam.intercept",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:sam/explosion_small_1"
+      },
+      {
+        "name": "ntm_air_defense:sam/explosion_small_2"
+      },
+      {
+        "name": "ntm_air_defense:sam/explosion_small_3"
+      }
+    ]
+  },
+  "console.hum": {
+    "subtitle": "subtitles.ntm_air_defense.console.hum",
+    "sounds": [
+      {
+        "name": "ntm_air_defense:console_hum",
+        "volume": 0.12
+      }
+    ]
+  }
 }

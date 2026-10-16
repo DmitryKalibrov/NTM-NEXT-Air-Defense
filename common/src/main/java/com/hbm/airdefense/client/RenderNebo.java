@@ -1,6 +1,7 @@
 package com.hbm.airdefense.client;
 
 import com.hbm.airdefense.AirDefense;
+import com.hbm.airdefense.Camo;
 import com.hbm.airdefense.BlockEntityNebo;
 import com.hbm.client.model.Meshes;
 import com.hbm.render.loader.HFRWavefrontObject;
@@ -10,7 +11,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.phys.Vec3;
@@ -21,7 +21,8 @@ public class RenderNebo implements BlockEntityRenderer<BlockEntityNebo, RenderNe
 
     static final HFRWavefrontObject MESH = Meshes.load(AirDefense.id("models/obj/radar_nebo.obj"));
     private static final int ANTENNA = MESH.partId("Antenna");
-    private static final RenderType TYPE = RenderTypes.entityCutoutCull(AirDefense.id("textures/block/radar_nebo.png"));
+    private static final HFRWavefrontObject NET = Meshes.load(AirDefense.id("models/obj/net_nebo.obj"));
+    private static final int NET_PART = NET.partId("Net");
 
     @Override
     public State createRenderState() {
@@ -43,6 +44,8 @@ public class RenderNebo implements BlockEntityRenderer<BlockEntityNebo, RenderNe
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breaking) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breaking);
         state.spin = be.prevRotation + (be.rotation - be.prevRotation) * partialTicks;
+        state.camo = Camo.of(be.getBlockState());
+        state.net = Camo.net(be.getBlockState());
     }
 
     @Override
@@ -51,11 +54,21 @@ public class RenderNebo implements BlockEntityRenderer<BlockEntityNebo, RenderNe
         ps.pushPose();
         ps.translate(0.5, 0.0, 0.5);
         ps.mulPose(Axis.YP.rotationDegrees(-s.spin));
-        collector.submitCustomGeometry(ps, TYPE, (pose, buffer) -> MESH.renderPart(pose, buffer, light, -1, ANTENNA));
+        collector.submitCustomGeometry(ps, RenderTypes.entityCutoutCull(s.camo.texture("radar_nebo")),
+                (pose, buffer) -> MESH.renderPart(pose, buffer, light, -1, ANTENNA));
         ps.popPose();
+        if (s.net) {
+            ps.pushPose();
+            ps.translate(0.5, 0.0, 0.5);
+            collector.submitCustomGeometry(ps, RenderTypes.entityCutout(s.camo.netTexture()),
+                    (pose, buffer) -> NET.renderPart(pose, buffer, light, -1, NET_PART));
+            ps.popPose();
+        }
     }
 
     public static final class State extends BlockEntityRenderState {
         float spin;
+        Camo camo = Camo.GREEN;
+        boolean net;
     }
 }

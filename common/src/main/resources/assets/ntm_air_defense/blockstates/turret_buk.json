@@ -1,8 +1,40 @@
 {
   "variants": {
-    "facing=east": { "model": "ntm_air_defense:block/turret_buk_east" },
-    "facing=north": { "model": "ntm_air_defense:block/turret_buk_north" },
-    "facing=south": { "model": "ntm_air_defense:block/turret_buk_south" },
-    "facing=west": { "model": "ntm_air_defense:block/turret_buk_west" }
+    "camo=green,facing=east": {
+      "model": "ntm_air_defense:block/turret_buk_east"
+    },
+    "camo=desert,facing=east": {
+      "model": "ntm_air_defense:block/turret_buk_east_desert"
+    },
+    "camo=winter,facing=east": {
+      "model": "ntm_air_defense:block/turret_buk_east_winter"
+    },
+    "camo=green,facing=north": {
+      "model": "ntm_air_defense:block/turret_buk_north"
+    },
+    "camo=desert,facing=north": {
+      "model": "ntm_air_defense:block/turret_buk_north_desert"
+    },
+    "camo=winter,facing=north": {
+      "model": "ntm_air_defense:block/turret_buk_north_winter"
+    },
+    "camo=green,facing=south": {
+      "model": "ntm_air_defense:block/turret_buk_south"
+    },
+    "camo=desert,facing=south": {
+      "model": "ntm_air_defense:block/turret_buk_south_desert"
+    },
+    "camo=winter,facing=south": {
+      "model": "ntm_air_defense:block/turret_buk_south_winter"
+    },
+    "camo=green,facing=west": {
+      "model": "ntm_air_defense:block/turret_buk_west"
+    },
+    "camo=desert,facing=west": {
+      "model": "ntm_air_defense:block/turret_buk_west_desert"
+    },
+    "camo=winter,facing=west": {
+      "model": "ntm_air_defense:block/turret_buk_west_winter"
+    }
   }
 }

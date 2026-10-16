@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "ntm_air_defense:item/camo_sprayer"
+  }
+}

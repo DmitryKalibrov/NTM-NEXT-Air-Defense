@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "II ",
+    "DLS",
+    " I "
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "D": "minecraft:green_dye",
+    "L": "#minecraft:leaves",
+    "S": "minecraft:string"
+  },
+  "result": {
+    "id": "ntm_air_defense:camo_sprayer",
+    "count": 1
+  }
+}

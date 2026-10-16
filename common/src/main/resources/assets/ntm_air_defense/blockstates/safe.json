@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ntm_air_defense:block/safe"
+    },
+    "facing=east": {
+      "model": "ntm_air_defense:block/safe",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "ntm_air_defense:block/safe",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ntm_air_defense:block/safe",
+      "y": 270
+    }
+  }
+}

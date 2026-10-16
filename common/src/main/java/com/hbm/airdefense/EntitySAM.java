@@ -4,6 +4,11 @@ import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.airdefense.mixin.LevelAccessor;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ChunkUtil;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -40,22 +45,26 @@ public class EntitySAM extends Entity {
 
     public enum Kind {
         //    max speed, accel, turn deg/tick, life, fuse, damage, cold-launch ticks, vertical boost ticks, blast,
-        //    staging tick (0 = single stage), stage centre behind the missile centre, miss chance
+        //    staging tick (0 = single stage), stage centre behind the missile centre, miss chance,
+        //    lateral acceleration limit in blocks/tick^2 (0 = only the turn rate limits; 0.75 ~ 30 g), motor spool-up ticks
         // Must clearly outrun NTM missiles (~4-8 blocks/tick cruising) or it only catches them on descent.
-        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0, 0, 4f, 0, 0, 0.15),
-        TOR(12.0, 1.2, 22, 220, 5.0, 35f, 5, 0, 3f, 0, 0, 0.15),
+        BUK(14.0, 1.0, 8, 300, 7.0, 60f, 0, 0, 4f, 0, 0, 0.02, 0, 0),
+        // 9M338: thrown 10+ blocks straight up by the catapult, gas jets tip it at the target, then the motor lights.
+        // After the catapult: the motor comes up to thrust over 6 ticks, ~20 g to full speed in about 1.2 s, and it
+        // turns no harder than ~30 g allows, so the faster it flies the wider it turns.
+        TOR(12.0, 0.5, 22, 220, 5.0, 35f, 18, 0, 3f, 0, 0, 0.02, 0.75, 6),
         // 53T6: hot launch straight out of the silo, ~100 g, then pitches over onto a target 3+ km out.
-        A135(18.0, 1.5, 8, 420, 10.0, 100f, 0, 8, 6f, 30, 1.925, 0.1),
+        A135(18.0, 1.5, 8, 420, 10.0, 100f, 0, 8, 6f, 30, 1.925, 0.02, 0, 0),
         // 57E6: hot launch from the tube, the booster drops after half a second, the dart flies on.
-        PANTSIR(20.0, 3.0, 14, 170, 4.5, 40f, 0, 0, 3f, 10, 0.9, 0.2);
+        PANTSIR(20.0, 3.0, 14, 170, 4.5, 40f, 0, 0, 3f, 10, 0.9, 0.02, 0, 0);
 
-        final double maxSpeed, accel, turn, stageBack;
-        final int life, cold, boost, staging;
+        final double maxSpeed, accel, turn, stageBack, lateral;
+        final int life, cold, boost, staging, spool;
         final double fuse, miss;
         final float damage, blast;
 
         Kind(double maxSpeed, double accel, double turnDeg, int life, double fuse, float damage, int cold, int boost, float blast,
-             int staging, double stageBack, double miss) {
+             int staging, double stageBack, double miss, double lateral, int spool) {
             this.maxSpeed = maxSpeed;
             this.accel = accel;
             this.turn = Math.toRadians(turnDeg);
@@ -68,6 +77,18 @@ public class EntitySAM extends Entity {
             this.staging = staging;
             this.stageBack = stageBack;
             this.miss = miss;
+            this.lateral = lateral;
+            this.spool = spool;
+        }
+
+        /** Turn rate allowed at this speed. */
+        double turn(double speed) {
+            return lateral > 0 ? Math.min(turn, lateral / Math.max(speed, 0.5)) : turn;
+        }
+
+        /** Speed gained this tick, ticks after the motor lit: spools up instead of kicking in at full thrust. */
+        double accel(int sinceIgnition) {
+            return spool > 0 ? accel * Math.clamp((sinceIgnition + 1) / (double) spool, 0, 1) : accel;
         }
 
         public double stageBack() {
@@ -107,10 +128,36 @@ public class EntitySAM extends Entity {
     private Vec3 heading = new Vec3(0, 1, 0), spinAxis = new Vec3(1, 0, 0);
     /** Game time of the last server tick: a launcher drops a missile that stopped ticking. */
     long lastTicked;
+    /** Who fired it (set by the launcher), the target it went for, and whether its outcome is in the {@link SamLog}. */
+    @Nullable BlockPos launcher;
+    private int targetId = -1;
+    private boolean reported;
+    /** The last guided ticks: own position and the target's, for the consoles' TV channel. */
+    private final ArrayDeque<double[]> clip = new ArrayDeque<>();
+    static final int CLIP = 50;
+    /**
+     * A failed launch, rolled at launch: NOSE = the motor dies (Tor: never lights) and it noses into the ground near
+     * the launcher; FLAT (Tor only) = it tips over, the motor coughs three times and it falls flat. On the ground it
+     * either pops (no terrain damage) or lies there as an {@link EntitySAMWreck} to be picked up.
+     * The chance can be raised with -Dntm_air_defense.dud=1, or every launch made a dud with the debug tool's world switch.
+     */
+    static final double DUD = Double.parseDouble(System.getProperty("ntm_air_defense.dud", "0.0001"));
+    private static final int NOSE = 1, FLAT = 2;
+    private int dud;
 
     public EntitySAM(EntityType<? extends EntitySAM> type, Level level) {
         super(type, level);
         noPhysics = true;
+    }
+
+    /** Missiles in the air (server side), for {@link #engaged}. ponytail: one global set, fine for one server. */
+    private static final Set<EntitySAM> LIVE = Collections.newSetFromMap(new WeakHashMap<>());
+
+    /** Some launcher already has a guided missile in the air at this target. */
+    static boolean engaged(Entity target) {
+        LIVE.removeIf(s -> !s.isAlive());
+        for (EntitySAM s : LIVE) if (!s.lost && s.target == target) return true;
+        return false;
     }
 
     public static EntitySAM fire(Level level, Kind kind, Vec3 pos, Vec3 dir, Entity target) {
@@ -121,14 +168,26 @@ public class EntitySAM extends Entity {
         sam.setDeltaMovement(dir.scale(sam.speed));
         sam.face(dir);
         sam.target = target;
+        sam.targetId = target.getId();
         sam.miss = level.getRandom().nextDouble() < kind.miss;
+        if (level.getRandom().nextDouble() < DUD || level instanceof ServerLevel s && ItemTargetCaller.allDuds(s)) sam.dud = kind == Kind.TOR && level.getRandom().nextBoolean() ? FLAT : NOSE;
         sam.lastTicked = level.getGameTime();
         level.addFreshEntity(sam);
-        float pitch = switch (kind) { case TOR -> 1.3f; case BUK -> 0.9f; case A135 -> 0.6f; case PANTSIR -> 1.5f; };
-        level.playSound(null, pos.x, pos.y, pos.z, ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 10f, pitch);
+        LIVE.add(sam);
+        if (kind.cold > 0) level.playSound(null, pos.x, pos.y, pos.z, AdSounds.TOR_EJECT, SoundSource.BLOCKS, 6f, 1f); // gas throw, caps, turn jets
+        else sam.ignitionSound();
         return sam;
     }
 
+
+    private void ignitionSound() {
+        if (kind() == Kind.TOR) {
+            level().playSound(null, getX(), getY(), getZ(), AdSounds.TOR_IGNITION, SoundSource.BLOCKS, 10f, 1f);
+            return;
+        }
+        float pitch = switch (kind()) { case TOR -> 1.3f; case BUK -> 0.9f; case A135 -> 0.6f; case PANTSIR -> 1.5f; };
+        level().playSound(null, getX(), getY(), getZ(), ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 10f, pitch);
+    }
 
     public Kind kind() {
         return Kind.values()[entityData.get(KIND)];
@@ -137,6 +196,11 @@ public class EntitySAM extends Entity {
     /** Motor burning (not during the Tor's cold catapult phase). */
     public boolean motorOn() {
         return tickCount > kind().cold && !entityData.get(BURNT);
+    }
+
+    /** Ticks since the motor lit (negative while still on the catapult). */
+    public float burnTicks(float partialTicks) {
+        return tickCount + partialTicks - kind().cold;
     }
 
     /** Motor section already dropped. */
@@ -169,6 +233,7 @@ public class EntitySAM extends Entity {
         super.tick();
         if (level().isClientSide()) {
             SamTrail.tick(this, position().subtract(prePos));
+            if (kind() == Kind.TOR) SamSounds.flight(this);
             return;
         }
         Kind k = kind();
@@ -179,11 +244,21 @@ public class EntitySAM extends Entity {
         if (!lost && tickCount > k.life) loseGuidance(0); // out of fuel: falls, no more self-destruct in mid-air
         lastTicked = level().getGameTime();
         ChunkUtil.holdOwnChunk(this);
-        if (target != null && !target.isAlive()) target = null;
+        if (!lost && target != null && !target.isAlive()) { // shot down by someone else: self-destruct
+            reported = true;
+            detonate(position());
+            return;
+        }
 
         Vec3 vel = getDeltaMovement();
-        if (tickCount <= k.cold) {
-            vel = new Vec3(0, Math.max(0.2, 1.0 - tickCount * 0.1), 0);  // catapult: up, slowing
+        if (dud > 0 && tickCount > failTick()) {
+            vel = dudFlight(vel);
+        } else if (tickCount <= k.cold) {
+            vel = catapult(vel, k);
+        } else if (k.cold > 0 && tickCount == k.cold + 1) {
+            ignitionSound();
+            speed = 0.5;
+            vel = vel.normalize().scale(speed);
         } else if (tickCount <= k.boost) {
             speed = Math.min(speed + k.accel, k.maxSpeed);  // out of the silo: straight up, full thrust
             vel = new Vec3(0, speed, 0);
@@ -193,7 +268,7 @@ public class EntitySAM extends Entity {
             Vec3 dir = vel.normalize();
             double cap = k.maxSpeed;
             if (missPoint != null) {
-                dir = steer(dir, missPoint.subtract(position()).normalize(), k.turn);
+                dir = steer(dir, missPoint.subtract(position()).normalize(), k.turn(speed));
             } else if (target != null) {
                 Vec3 aim = intercept();
                 if (miss && ++guided >= 5) { // a few ticks in: the target's motion is known, the lead is plausible
@@ -216,13 +291,13 @@ public class EntitySAM extends Entity {
                     detonate(position());
                     return;
                 }
-                dir = steer(dir, aim.subtract(position()).normalize(), k.turn);
+                dir = steer(dir, aim.subtract(position()).normalize(), k.turn(speed));
             }
-            speed = Math.min(speed + k.accel, cap);
+            speed = Math.min(speed + k.accel(tickCount - k.cold - 1), cap);
             vel = dir.scale(speed);
         }
 
-        if (k.staging > 0 && tickCount >= k.staging && !staged()) stage(vel);
+        if (dud == 0 && k.staging > 0 && tickCount >= k.staging && !staged()) stage(vel);
 
         // At up to 20 blocks a tick the next chunk may not tick entities yet: wait for it, give up after 2 s.
         if (!holdAhead(this, vel)) {
@@ -250,19 +325,50 @@ public class EntitySAM extends Entity {
         if (tickCount > k.boost) {
             BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() != HitResult.Type.MISS) {
-                detonate(hit.getLocation());
+                if (dud > 0) crash(hit);
+                else detonate(hit.getLocation());
                 return;
             }
         }
         setPos(to);
         setDeltaMovement(vel);
-        face(lost ? heading : vel);
+        face(lost || dud > 0 ? heading : vel);
+        if (!lost && target != null) {
+            Vec3 tc = center(target);
+            clip.addLast(new double[]{to.x, to.y, to.z, tc.x, tc.y, tc.z});
+            if (clip.size() > CLIP) clip.removeFirst();
+        }
+    }
+
+    /** Into the log once: a hit (with the TV picture for the launcher) or a miss. */
+    private void report(Vec3 at, boolean hit) {
+        if (reported) return;
+        reported = true;
+        BlockPos from = launcher != null ? launcher : blockPosition();
+        SamLog.add(level(), from, at, hit ? SamLog.HIT : SamLog.MISS, targetId);
+        if (hit && launcher != null && ChunkUtil.blockEntityIfLoaded(BlockEntitySAMBase.class, level(), launcher) instanceof BlockEntitySAMBase sam) {
+            sam.clip(List.copyOf(clip), at);
+        }
+    }
+
+    /**
+     * Cold launch: thrown up, slowing under gravity to a near stop at the top (2/3 of the phase), then the gas
+     * jets tip the nose at the lead point while it hangs there.
+     */
+    private Vec3 catapult(Vec3 vel, Kind k) {
+        int tilt = k.cold / 3;
+        // ~11 blocks up over 12 ticks (tor sounds: tools gen_systems.py tor_mod are timed to this)
+        if (tickCount <= k.cold - tilt) return new Vec3(0, Math.max(0.12, 1.6 - 0.119 * (tickCount - 1)), 0);
+        Vec3 dir = vel.normalize();
+        if (target != null) dir = steer(dir, intercept().subtract(position()).normalize(), Math.toRadians(20));
+        return dir.scale(0.25);
     }
 
     /** Stops guiding; burnTicks of motor left. Launchers stop counting it against their salvo. */
     private void loseGuidance(int burnTicks) {
         var r = level().getRandom();
         lost = true;
+        report(position(), false);
         burn = burnTicks;
         if (burn <= 0) entityData.set(BURNT, true);
         Vec3 v = getDeltaMovement();
@@ -288,8 +394,64 @@ public class EntitySAM extends Entity {
         return vel.length() > k.maxSpeed ? vel.normalize().scale(k.maxSpeed) : vel;
     }
 
+    /** Lost guidance or a failed launch: the launcher no longer counts it. */
     boolean lost() {
-        return lost;
+        return lost || dud > 0 && tickCount > failTick();
+    }
+
+    /** The last tick a dud flies normally: the Tor's catapult still works, the others' motors die a few ticks out. */
+    private int failTick() {
+        return switch (kind()) { case TOR -> kind().cold; case A135 -> kind().boost; default -> 5; };
+    }
+
+    /** Half the missile's length, centre to nozzle. */
+    static double halfLength(Kind k) {
+        return switch (k) { case BUK -> 2.8; case TOR -> 1.5; case A135 -> 3.3; case PANTSIR -> 1.6; };
+    }
+
+    private Vec3 dudFlight(Vec3 vel) {
+        var r = level().getRandom();
+        int t = tickCount - failTick();
+        if (t == 1) {
+            entityData.set(BURNT, true);
+            report(position(), false);
+            target = null;
+            missPoint = null;
+            heading = vel.lengthSqr() > 1e-6 ? vel.normalize() : new Vec3(0, 1, 0);
+            double a = r.nextDouble() * Math.PI * 2;
+            spinAxis = new Vec3(Math.cos(a), 0, Math.sin(a)); // the way it falls over
+            vel = vel.add(spinAxis.scale(0.25 + 0.15 * r.nextDouble()));  // clear of the launcher
+            level().playSound(null, getX(), getY(), getZ(), net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 4f, 0.6f);
+        }
+        if (dud == FLAT) {
+            heading = steer(heading, spinAxis.add(0, -0.08, 0).normalize(), Math.toRadians(8)); // tips over level
+            boolean pulse = t >= 6 && t < 24 && (t - 6) % 6 < 3;                                   // three coughs
+            if (pulse != !entityData.get(BURNT)) entityData.set(BURNT, !pulse);
+            if (pulse) {
+                vel = vel.add(heading.scale(0.12));
+                if ((t - 6) % 6 == 0) level().playSound(null, getX(), getY(), getZ(), ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 3f, 1.8f);
+            }
+        } else if (vel.lengthSqr() > 1e-6) {
+            heading = steer(heading, vel.normalize(), Math.toRadians(6)); // the nose drops after the fall
+        }
+        vel = vel.scale(0.98).add(0, -0.08, 0);
+        return vel.length() > 3 ? vel.normalize().scale(3) : vel;
+    }
+
+    /** A dud hits the ground: sometimes the warhead pops (people get hurt, the ground doesn't), else it digs in. */
+    private void crash(BlockHitResult hit) {
+        ServerLevel server = (ServerLevel) level();
+        Vec3 at = hit.getLocation();
+        if (server.getRandom().nextDouble() < 0.4) {
+            server.explode(this, at.x, at.y, at.z, kind().blast * 0.7f, Level.ExplosionInteraction.NONE);
+            EntityBurst.spawn(server, at, false, Vec3.ZERO);
+        } else {
+            server.levelEvent(net.minecraft.world.level.block.LevelEvent.PARTICLES_DESTROY_BLOCK, hit.getBlockPos(),
+                    net.minecraft.world.level.block.Block.getId(server.getBlockState(hit.getBlockPos())));
+            server.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
+            EntitySAMWreck.place(server, kind(), at, heading);
+        }
+        discard();
     }
 
     private Vec3 randomUnit() {
@@ -349,12 +511,18 @@ public class EntitySAM extends Entity {
         // Airburst: entity damage and the boom, no terrain damage. Our own close-up boom (vanilla range, 64 blocks);
         // Distant Thunder, if installed, plays sam.intercept_mid / _far further out.
         server.explode(this, null, null, at.x, at.y, at.z, k.blast, false, Level.ExplosionInteraction.NONE,
-                ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, LevelAccessor.ntmad$blockParticles(), INTERCEPT);
+                ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, LevelAccessor.ntmad$blockParticles(),
+                k == Kind.TOR ? AdSounds.EXPLOSION_SMALL : INTERCEPT);
+        boolean kill = false;
         if (target != null && center(target).distanceTo(at) <= k.fuse * 1.5) {
             DamageSource src = damageSources().explosion(this, null);
             // NTM missiles have 50 health and blow up on their own when it runs out.
             target.hurtServer(server, src, target instanceof EntityMissileBaseNT ? 100f : k.damage);
+            kill = !target.isAlive();
+            report(at, true);
         }
+        report(at, false);
+        EntityBurst.spawn(server, at, kill, targetVel);
         discard();
     }
 

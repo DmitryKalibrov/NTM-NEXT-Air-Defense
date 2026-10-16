@@ -22,7 +22,12 @@ cd tools/blender
 python bl.py code /tmp/run.py
 cd ../..
 python tools/outline.py common/src/main/resources/assets/ntm_air_defense/textures/block/buk.png build/buk_outlines.json
+python tools/zfight.py common/src/main/resources/assets/ntm_air_defense/models/obj/buk.obj --cross --fix
 python tools/obj2mesh.py common/src/main/resources/assets/ntm_air_defense/models/obj/buk.obj
 ```
+
+`zfight.py` раздвигает совпадающие плоскости разных деталей (мерцание граней): меньшая деталь выдвигается
+на 0.01 блока. `--cross` — сравнивать и разные группы (корпус с башней); для каталогов взаимоисключающих
+деталей (`control_console`, `control_parts`) — без него.
 
 `bl.py shot out.png` снимает вьюпорт. Оси вращения частей — в `docs/animation.md`.

@@ -6,7 +6,13 @@
     "RadarLinkerMixin",
     "TurretMenuMixin",
     "AssemblyMachineMixin",
-    "LevelAccessor"
+    "LevelAccessor",
+    "SeismicVanillaMixin",
+    "SeismicVntMixin",
+    "SeismicNukeMixin",
+    "SeismicMukeMixin",
+    "PracticeMissileMixin",
+    "RadarNameMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -14,6 +20,15 @@
   "client": [
     "AssemblerScreenMixin",
     "TurretScreenMixin",
-    "MissileContrailMixin"
+    "MissileContrailMixin",
+    "ConsoleInputMixin",
+    "ConsoleScrollMixin",
+    "ConsoleHudMixin",
+    "DeviceNameMixin",
+    "RadarScreenKeysMixin",
+    "CameraFovMixin",
+    "RenderTypeAccessor",
+    "CreativeSectionsMixin",
+    "CreativeSectionClickMixin"
   ]
 }

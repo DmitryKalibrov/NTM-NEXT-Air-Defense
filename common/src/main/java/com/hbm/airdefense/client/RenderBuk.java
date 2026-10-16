@@ -1,6 +1,7 @@
 package com.hbm.airdefense.client;
 
 import com.hbm.airdefense.AirDefense;
+import com.hbm.airdefense.Camo;
 import com.hbm.airdefense.BlockEntityBuk;
 import com.hbm.client.model.Meshes;
 import com.hbm.client.render.RenderTurretBase;
@@ -14,6 +15,9 @@ public class RenderBuk extends RenderTurretBase<BlockEntityBuk> {
 
     static final HFRWavefrontObject MESH = Meshes.load(AirDefense.id("models/obj/buk.obj"));
     static final Identifier TEX = AirDefense.id("textures/block/buk.png");
+    /** The vegetation net over the hull, own mesh and leaf texture. */
+    private static final HFRWavefrontObject NET = Meshes.load(AirDefense.id("models/obj/net_buk.obj"));
+    private static final int NET_PART = NET.partId("Net");
     private static final int CARRIAGE = MESH.partId("Carriage"), RADAR = MESH.partId("Radar"),
             LAUNCHER = MESH.partId("Launcher"), RAM_CYL = MESH.partId("RamCylinder"), RAM_ROD = MESH.partId("RamRod");
     private static final int[] MISSILES = MESH.partIds("Missile1", "Missile2", "Missile3", "Missile4");
@@ -24,16 +28,17 @@ public class RenderBuk extends RenderTurretBase<BlockEntityBuk> {
 
     @Override
     protected void emit(BlockEntityBuk t, State s, TurretFrame frame) {
-        TurretFrame.Part carriage = frame.push().obj(MESH, CARRIAGE).texture(TEX);
+        Identifier tex = Camo.of(t.getBlockState()).texture("buk");
+        TurretFrame.Part carriage = frame.push().obj(MESH, CARRIAGE).texture(tex);
         carriage.pose.rotateY((s.yaw - 180F) * Mth.DEG_TO_RAD);
 
-        frame.push().obj(MESH, RADAR).texture(TEX).pose.set(carriage.pose);
+        frame.push().obj(MESH, RADAR).texture(tex).pose.set(carriage.pose);
 
         float pitch = s.pitch * Mth.DEG_TO_RAD;
-        TurretFrame.Part launcher = frame.push().obj(MESH, LAUNCHER).texture(TEX);
+        TurretFrame.Part launcher = frame.push().obj(MESH, LAUNCHER).texture(tex);
         launcher.pose.set(carriage.pose).translate(0, LY, LZ).rotateX(pitch).translate(0, -LY, -LZ);
         for (int i = 0; i < t.ammo && i < MISSILES.length; i++)
-            frame.push().obj(MESH, MISSILES[i]).texture(TEX).pose.set(launcher.pose);
+            frame.push().obj(MESH, MISSILES[i]).texture(tex).pose.set(launcher.pose);
 
         // Ram: lug B swings with the rail; the cylinder turns about A to point at it, the rod slides out.
         float c = Mth.cos(pitch), sn = Mth.sin(pitch);
@@ -42,10 +47,11 @@ public class RenderBuk extends RenderTurretBase<BlockEntityBuk> {
         float d0y = BY - AY, d0z = BZ - AZ, d1y = b1y - AY, d1z = b1z - AZ;
         float swing = (float) (Math.atan2(d1y, -d1z) - Math.atan2(d0y, -d0z));
         float len1 = Mth.sqrt(d1y * d1y + d1z * d1z), ext = len1 - Mth.sqrt(d0y * d0y + d0z * d0z);
-        frame.push().obj(MESH, RAM_CYL).texture(TEX).pose
+        frame.push().obj(MESH, RAM_CYL).texture(tex).pose
                 .set(carriage.pose).translate(0, AY, AZ).rotateX(swing).translate(0, -AY, -AZ);
-        frame.push().obj(MESH, RAM_ROD).texture(TEX).pose
+        frame.push().obj(MESH, RAM_ROD).texture(tex).pose
                 .set(carriage.pose).translate(0, d1y / len1 * ext, d1z / len1 * ext)
                 .translate(0, AY, AZ).rotateX(swing).translate(0, -AY, -AZ);
+        if (Camo.net(t.getBlockState())) frame.push().obj(NET, NET_PART).texture(Camo.of(t.getBlockState()).netTexture()).pose.set(carriage.pose);
     }
 }

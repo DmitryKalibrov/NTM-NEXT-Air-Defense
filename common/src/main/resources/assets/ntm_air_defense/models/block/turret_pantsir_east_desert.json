@@ -1,0 +1,40 @@
+{
+  "fabric:type": "hbm:obj",
+  "loader": "hbm:obj",
+  "ambientocclusion": false,
+  "gui_light": "side",
+  "hidden": [
+    "Turret",
+    "SearchRadar",
+    "WeaponL",
+    "WeaponR",
+    "TrackRadar",
+    "Cap1",
+    "Cap2",
+    "Cap3",
+    "Cap4",
+    "Cap5",
+    "Cap6",
+    "Cap7",
+    "Cap8",
+    "Cap9",
+    "Cap10",
+    "Cap11",
+    "Cap12",
+    "PantsirStage",
+    "PantsirDart",
+    "Tracer"
+  ],
+  "model": "ntm_air_defense:models/obj/pantsir.obj",
+  "offset_x": -0.5,
+  "offset_z": 0.5,
+  "skins": {
+    "all": [
+      "Base"
+    ]
+  },
+  "textures": {
+    "all": "ntm_air_defense:block/pantsir_desert",
+    "particle": "ntm_air_defense:block/pantsir_desert"
+  }
+}

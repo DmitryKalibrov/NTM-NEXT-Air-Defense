@@ -1,6 +1,7 @@
 package com.hbm.airdefense.client;
 
 import com.hbm.airdefense.AirDefense;
+import com.hbm.airdefense.Camo;
 import com.hbm.airdefense.BlockEntityTor;
 import com.hbm.client.model.Meshes;
 import com.hbm.client.render.RenderTurretBase;
@@ -14,6 +15,9 @@ public class RenderTor extends RenderTurretBase<BlockEntityTor> {
 
     static final HFRWavefrontObject MESH = Meshes.load(AirDefense.id("models/obj/tor.obj"));
     static final Identifier TEX = AirDefense.id("textures/block/tor.png");
+    /** The vegetation net over the hull, own mesh and leaf texture. */
+    private static final HFRWavefrontObject NET = Meshes.load(AirDefense.id("models/obj/net_tor.obj"));
+    private static final int NET_PART = NET.partId("Net");
     private static final int TURRET = MESH.partId("Turret"), SEARCH = MESH.partId("SearchRadar"),
             TRACK = MESH.partId("TrackRadar");
     private static final int[] HATCHES =
@@ -24,27 +28,29 @@ public class RenderTor extends RenderTurretBase<BlockEntityTor> {
 
     @Override
     protected void emit(BlockEntityTor t, State s, TurretFrame frame) {
-        TurretFrame.Part turret = frame.push().obj(MESH, TURRET).texture(TEX);
+        Identifier tex = Camo.of(t.getBlockState()).texture("tor");
+        TurretFrame.Part turret = frame.push().obj(MESH, TURRET).texture(tex);
         turret.pose.rotateY((s.yaw - 180F) * Mth.DEG_TO_RAD);
 
         float time = s.gameTime + s.partialTicks;
         float spin = t.isOn() ? time * Mth.TWO_PI / 40f : 0f;
-        frame.push().obj(MESH, SEARCH).texture(TEX).pose
+        frame.push().obj(MESH, SEARCH).texture(tex).pose
                 .set(turret.pose).translate(0, 0, SEARCH_Z).rotateY(spin).translate(0, 0, -SEARCH_Z);
 
-        frame.push().obj(MESH, TRACK).texture(TEX).pose
+        frame.push().obj(MESH, TRACK).texture(tex).pose
                 .set(turret.pose).translate(0, TRACK_Y, TRACK_Z).rotateX(s.pitch * Mth.DEG_TO_RAD)
                 .translate(0, -TRACK_Y, -TRACK_Z);
 
         float dt = time - t.launchTime;
-        float open = smooth(dt / 4f) * (1f - smooth((dt - 30f) / 10f));
+        float open = smooth(dt / BlockEntityTor.HATCH_LEAD) * (1f - smooth((dt - 30f) / 10f));
         for (int c = 0; c < HATCHES.length; c++) {
             boolean back = c < 4;  // back row hinges at the rear edge, front row at the front edge
             float z = back ? 0.78f : -0.78f;
             float a = c == t.launchCell ? open * HATCH_OPEN * (back ? 1f : -1f) : 0f;
-            frame.push().obj(MESH, HATCHES[c]).texture(TEX).pose
+            frame.push().obj(MESH, HATCHES[c]).texture(tex).pose
                     .set(turret.pose).translate(0, HINGE_Y, z).rotateX(a).translate(0, -HINGE_Y, -z);
         }
+        if (Camo.net(t.getBlockState())) frame.push().obj(NET, NET_PART).texture(Camo.of(t.getBlockState()).netTexture()).pose.set(turret.pose);
     }
 
     private static float smooth(float x) {
